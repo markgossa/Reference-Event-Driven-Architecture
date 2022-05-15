@@ -27,8 +27,8 @@ public class WebBffHttpClient : IWebBffHttpClient
     private HttpRequestMessage BuildRequest(Booking booking, string correlationId)
     {
         var webBffBookingRequest = MapToWebBffBookingRequest(booking);
-        var request = BuildHttpRequest(webBffBookingRequest, correlationId);
-        return request;
+        
+        return BuildHttpRequest(webBffBookingRequest, correlationId);
     }
     
     private async Task SendRequestAsync(HttpRequestMessage request)
@@ -38,8 +38,8 @@ public class WebBffHttpClient : IWebBffHttpClient
     }
 
     private static WebBffBookingRequest MapToWebBffBookingRequest(Booking booking)
-        => new(booking.FirstName, booking.LastName, booking.StartDate,
-                booking.EndDate, booking.Destination, booking.Price);
+        => new(booking.FirstName, booking.LastName, booking.StartDate.ToDateTime(default),
+            booking.EndDate.ToDateTime(default), booking.Destination, booking.Price);
 
     private static StringContent BuildHttpContent(WebBffBookingRequest webBffBookingRequest) 
         => new(JsonSerializer.Serialize(webBffBookingRequest), Encoding.UTF8, MediaTypeNames.Application.Json);
