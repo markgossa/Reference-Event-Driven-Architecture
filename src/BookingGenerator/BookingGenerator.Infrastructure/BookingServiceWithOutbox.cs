@@ -47,7 +47,6 @@ public class BookingServiceWithOutbox : IBookingService
     {
         var messages = await _messageOutbox.GetAsync();
         await ReplayMessagesAsync(messages);
-        await RemoveMessagesAsync(messages);
     }
 
     private void LogWarning(string correlationId, Exception ex) 
@@ -61,15 +60,14 @@ public class BookingServiceWithOutbox : IBookingService
     {
         foreach (var message in messages)
         {
-            await _bookingService.BookAsync(message.MessageObject, message.CorrelationId);
-        }
-    }
-
-    private async Task RemoveMessagesAsync(IEnumerable<OutboxMessage<Booking>> messages)
-    {
-        foreach (var message in messages)
-        {
-            await _messageOutbox.RemoveAsync(message.CorrelationId);
+            try
+            {
+                await _bookingService.BookAsync(message.MessageObject, message.CorrelationId);
+                await _messageOutbox.RemoveAsync(message.CorrelationId);
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 }
