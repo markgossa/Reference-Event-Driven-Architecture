@@ -60,14 +60,20 @@ public class BookingServiceWithOutbox : IBookingService
     {
         foreach (var message in messages)
         {
-            try
-            {
-                await _bookingService.BookAsync(message.MessageObject, message.CorrelationId);
-                await _messageOutbox.RemoveAsync(message.CorrelationId);
-            }
-            catch (Exception)
-            {
-            }
+            await TryReplayMessageAsync(message);
+        }
+    }
+
+    private async Task TryReplayMessageAsync(OutboxMessage<Booking> message)
+    {
+        try
+        {
+            await _bookingService.BookAsync(message.MessageObject, message.CorrelationId);
+            await _messageOutbox.RemoveAsync(message.CorrelationId);
+        }
+        catch (Exception ex)
+        {
+            LogWarning(message.CorrelationId, ex);
         }
     }
 }
