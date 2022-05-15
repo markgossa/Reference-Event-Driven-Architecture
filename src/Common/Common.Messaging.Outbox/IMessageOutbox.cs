@@ -4,7 +4,7 @@ namespace Common.Messaging.Outbox;
 public interface IMessageOutbox<T>
 {
     Task AddAsync(OutboxMessage<T> outboxMessage);
-    Task RemoveAsync(string correlationId);
-    Task FailAsync(string correlationId);
+    Task RemoveAsync(IEnumerable<string> correlationIds);
+    Task FailAsync(IEnumerable<string> correlationIds);
     Task<IEnumerable<OutboxMessage<T>>> GetAsync();
 }
