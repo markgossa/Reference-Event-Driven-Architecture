@@ -4,5 +4,5 @@ namespace BookingGenerator.Application.Repositories;
 
 public interface IBookingService
 {
-    Task BookAsync(Booking booking);
+    Task BookAsync(Booking booking, string? correlationId = null);
 }

@@ -1,13 +1,11 @@
 using BookingGenerator.Domain.Models;
 using BookingGenerator.Infrastructure.HttpClients;
+using Common.Messaging.CorrelationIdGenerator;
 using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
-using System;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace BookingGenerator.Infrastructure.Tests.Unit;
@@ -19,23 +17,37 @@ public class BookingServiceTests
     public async void GivenAnInstanceOfBookingService_WhenICallBookAsync_PostsRequestToWebBff()
     {
         var statusCode = HttpStatusCode.Accepted;
-        var httpClient = new HttpClient(BuildMockMessageHandler(statusCode).Object);
-        var webBffHttpClient = new WebBffHttpClient(httpClient, BuildMockOptions().Object);
+        var correlationId = Guid.NewGuid().ToString();
+        var httpClient = new HttpClient(BuildMockMessageHandler(statusCode, correlationId));
+        var webBffHttpClient = new WebBffHttpClient(httpClient, BuildMockOptions());
 
-        await MakeNewBookingAsync(webBffHttpClient);
+        await MakeNewBookingAsync(webBffHttpClient, SetUpMockCorrelationIdGenerator(correlationId));
+    }
+    
+    [Fact]
+    public async void GivenAnInstanceOfBookingService_WhenICallBookAsyncWithCorrelationId_PostsRequestToWebBffWithSameCorrelationId()
+    {
+        var statusCode = HttpStatusCode.Accepted;
+        var correlationId = Guid.NewGuid().ToString();
+        var httpClient = new HttpClient(BuildMockMessageHandler(statusCode, correlationId));
+        var webBffHttpClient = new WebBffHttpClient(httpClient, BuildMockOptions());
+        
+        await MakeNewBookingWithCorrelationIdAsync(correlationId, webBffHttpClient);
     }
 
     [Fact]
     public async void GivenAnInstanceOfBookingService_WhenICallBookAsyncAndThereIsAnError_ThrowsException()
     {
         var statusCode = HttpStatusCode.InternalServerError;
-        var httpClient = new HttpClient(BuildMockMessageHandler(statusCode).Object);
-        var webBffHttpClient = new WebBffHttpClient(httpClient, BuildMockOptions().Object);
+        var correlationId = Guid.NewGuid().ToString();
+        var httpClient = new HttpClient(BuildMockMessageHandler(statusCode, correlationId));
+        var webBffHttpClient = new WebBffHttpClient(httpClient, BuildMockOptions());
 
-        await Assert.ThrowsAsync<HttpRequestException>(async () => await MakeNewBookingAsync(webBffHttpClient));
+        await Assert.ThrowsAsync<HttpRequestException>(async () 
+            => await MakeNewBookingAsync(webBffHttpClient, SetUpMockCorrelationIdGenerator(correlationId)));
     }
 
-    private Mock<IOptions<WebBffHttpClientSettings>> BuildMockOptions()
+    private IOptions<WebBffHttpClientSettings> BuildMockOptions()
     {
         var mockOptions = new Mock<IOptions<WebBffHttpClientSettings>>();
         mockOptions.Setup(m => m.Value).Returns(new WebBffHttpClientSettings
@@ -45,21 +57,37 @@ public class BookingServiceTests
             WebBffBookingsUrl = _webBffUrl
         });
 
-        return mockOptions;
+        return mockOptions.Object;
     }
 
-    private Mock<HttpMessageHandler> BuildMockMessageHandler(HttpStatusCode statusCode)
+    private HttpMessageHandler BuildMockMessageHandler(HttpStatusCode statusCode, string correlationId)
     {
         var mockMessageHandler = new Mock<HttpMessageHandler>();
         mockMessageHandler.Protected().Setup<Task<HttpResponseMessage>>("SendAsync",
-                ItExpr.Is<HttpRequestMessage>(r => r.RequestUri == new Uri(_webBffUrl)),
+                ItExpr.Is<HttpRequestMessage>(r => r.RequestUri == new Uri(_webBffUrl)
+                    && r.Headers.Single(h => h.Key == "X-Correlation-Id").Value.Single() == correlationId),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage { StatusCode = statusCode });
 
-        return mockMessageHandler;
+        return mockMessageHandler.Object;
     }
 
-    private static async Task MakeNewBookingAsync(WebBffHttpClient webBffHttpClient) 
-        => await new BookingService(webBffHttpClient).BookAsync(new Booking("Joe", "Bloggs", 
-            DateOnly.Parse("15/05/2022"), DateOnly.Parse("22/05/2022"), "Jamaica", 799));
+    private static async Task MakeNewBookingAsync(WebBffHttpClient webBffHttpClient, 
+        ICorrelationIdGenerator mockCorrelationIdGenerator)
+            => await new BookingService(webBffHttpClient, mockCorrelationIdGenerator)
+                .BookAsync(new Booking("Joe", "Bloggs", DateOnly.Parse("15/05/2022"), 
+                    DateOnly.Parse("22/05/2022"), "Jamaica", 799));
+
+    private static ICorrelationIdGenerator SetUpMockCorrelationIdGenerator(string correlationId)
+    {
+        var mockCorrelationIdGenerator = new Mock<ICorrelationIdGenerator>();
+        mockCorrelationIdGenerator.Setup(m => m.CorrelationId).Returns(correlationId);
+
+        return mockCorrelationIdGenerator.Object;
+    }
+
+    private static async Task MakeNewBookingWithCorrelationIdAsync(string correlationId, WebBffHttpClient webBffHttpClient)
+        => await new BookingService(webBffHttpClient, new CorrelationIdGenerator())
+            .BookAsync(new Booking("Joe", "Bloggs", DateOnly.Parse("15/05/2022"),
+                DateOnly.Parse("22/05/2022"), "Jamaica", 799), correlationId);
 }

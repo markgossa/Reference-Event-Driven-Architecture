@@ -23,14 +23,14 @@ public class BookingServiceWithOutbox : IBookingService
         _logger = logger;
     }
 
-    public async Task BookAsync(Booking booking)
+    public async Task BookAsync(Booking booking, string? correlationId = null)
     {
-        var correlationId = _correlationIdGenerator.CorrelationId;
+        correlationId = _correlationIdGenerator.CorrelationId;
         await _messageOutbox.AddAsync(BuildOutboxMessage(booking));
         
         try
         {
-            await _bookingService.BookAsync(booking);
+            await _bookingService.BookAsync(booking, correlationId);
         }
         catch (Exception ex)
         {
@@ -43,10 +43,33 @@ public class BookingServiceWithOutbox : IBookingService
         await _messageOutbox.RemoveAsync(correlationId);
     }
 
+    public async Task ReplayBookingsAsync()
+    {
+        var messages = await _messageOutbox.GetAsync();
+        await ReplayMessagesAsync(messages);
+        await RemoveMessagesAsync(messages);
+    }
+
     private void LogWarning(string correlationId, Exception ex) 
         => _logger.LogWarning(ex, "Message could not be processed. CorrelationId: {correlationId}",
             correlationId);
 
     private OutboxMessage<Booking> BuildOutboxMessage(Booking booking)
         => new(_correlationIdGenerator.CorrelationId, booking);
+
+    private async Task ReplayMessagesAsync(IEnumerable<OutboxMessage<Booking>> messages)
+    {
+        foreach (var message in messages)
+        {
+            await _bookingService.BookAsync(message.MessageObject, message.CorrelationId);
+        }
+    }
+
+    private async Task RemoveMessagesAsync(IEnumerable<OutboxMessage<Booking>> messages)
+    {
+        foreach (var message in messages)
+        {
+            await _messageOutbox.RemoveAsync(message.CorrelationId);
+        }
+    }
 }

@@ -18,17 +18,41 @@ public class WebBffHttpClient : IWebBffHttpClient
         _settings = options.Value;
     }
 
-    public async Task PostAsync(Booking booking)
+    public async Task PostAsync(Booking booking, string correlationId)
+    {
+        var request = BuildRequest(booking, correlationId);
+        await SendRequestAsync(request);
+    }
+
+    private HttpRequestMessage BuildRequest(Booking booking, string correlationId)
     {
         var webBffBookingRequest = MapToWebBffBookingRequest(booking);
-
-        var json = JsonSerializer.Serialize(webBffBookingRequest);
-        using var httpContent = new StringContent(json, Encoding.UTF8, MediaTypeNames.Application.Json);
-        using var response = await _httpClient.PostAsync(_settings.WebBffBookingsUrl, httpContent);
+        var request = BuildHttpRequest(webBffBookingRequest, correlationId);
+        return request;
+    }
+    
+    private async Task SendRequestAsync(HttpRequestMessage request)
+    {
+        var response = await _httpClient.SendAsync(request);
         response.EnsureSuccessStatusCode();
     }
 
-    private static WebBffBookingRequest MapToWebBffBookingRequest(Booking booking) 
+    private static WebBffBookingRequest MapToWebBffBookingRequest(Booking booking)
         => new(booking.FirstName, booking.LastName, booking.StartDate,
                 booking.EndDate, booking.Destination, booking.Price);
+
+    private static StringContent BuildHttpContent(WebBffBookingRequest webBffBookingRequest) 
+        => new(JsonSerializer.Serialize(webBffBookingRequest), Encoding.UTF8, MediaTypeNames.Application.Json);
+
+    private HttpRequestMessage BuildHttpRequest(WebBffBookingRequest webBffBookingRequest, string correlationId)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Post, _settings.WebBffBookingsUrl)
+        {
+            Content = BuildHttpContent(webBffBookingRequest)
+        };
+
+        request.Headers.Add("X-Correlation-Id", correlationId);
+
+        return request;
+    }
 }
