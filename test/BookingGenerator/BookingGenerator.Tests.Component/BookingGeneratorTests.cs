@@ -78,8 +78,8 @@ public class BookingGeneratorTests : IClassFixture<ApiTestsContext>
         => new(JsonSerializer.Serialize(bulkBookingRequest), Encoding.UTF8, MediaTypeNames.Application.Json);
 
     private void AssertBookingRequestsSentToBff(BulkBookingRequest bulkBookingRequest, int count)
-            => _context.MockBookingService.Verify(m => m.BookAsync(MapToBooking(bulkBookingRequest.BookingRequests.First())),
-                Times.Exactly(count));
+            => _context.MockBookingService.Verify(m => m.BookAsync(MapToBooking(bulkBookingRequest.BookingRequests.First()), 
+                It.IsAny<string>()), Times.Exactly(count));
 
     private static Booking MapToBooking(BookingRequest bookingRequest)
         => new(bookingRequest.FirstName, bookingRequest.LastName, bookingRequest.StartDate.ToDateOnly(),

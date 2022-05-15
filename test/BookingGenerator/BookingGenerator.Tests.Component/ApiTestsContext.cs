@@ -25,7 +25,7 @@ public class ApiTestsContext : IDisposable
     }
 
     private void SetUpMockBookingService()
-        => MockBookingService.Setup(m => m.BookAsync(It.Is<Booking>(t => t.FirstName == "Unlucky")))
+        => MockBookingService.Setup(m => m.BookAsync(It.Is<Booking>(t => t.FirstName == "Unlucky"), It.IsAny<string>()))
             .ThrowsAsync(new Exception());
 
     protected WebApplicationFactory<Startup> BuildWebApplicationFactory()
