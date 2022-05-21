@@ -17,6 +17,7 @@ using Common.Messaging.Outbox.Repositories;
 using Common.Messaging.Outbox.Sql;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using BookingGenerator.Api.HostedServices;
 
 namespace BookingGenerator.Api.ServiceCollectionExtensions;
 
@@ -43,6 +44,9 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    public static IServiceCollection AddHostedServices(this IServiceCollection services)
+        => services.AddHostedService<BookingReplayHostedService>();
 
     private static BookingServiceWithOutbox BuildBookingServiceWithOutbox(IServiceProvider sp)
     {

@@ -4,7 +4,6 @@ using Common.Messaging.Outbox;
 using Common.Messaging.Outbox.Models;
 using Microsoft.Extensions.Logging;
 
-
 namespace BookingGenerator.Infrastructure;
 public class BookingReplayService : IBookingReplayService
 {
