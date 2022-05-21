@@ -27,7 +27,7 @@ public class Startup
             .AddMediatorServices()
             .AddApplicationInsightsTelemetry()
             .AddServices(Configuration)
-            //.AddHostedServices()
+            .AddHostedServices()
             .AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerGenOptions>()
             .AddControllers();
 

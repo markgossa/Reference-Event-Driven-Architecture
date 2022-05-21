@@ -79,40 +79,46 @@ public class SqlOutboxMessageRepositoryTests
     }
 
     [Fact]
-    public async Task GivenNewInstance_WhenIGetMessages_ThenMessagesWithANullLockExpiryAreReturned()
+    public async Task GivenNewInstance_WhenIGetMessages_ThenMessagesWithANullLockExpiryAreReturnedWithAllProperties()
     {
         var sut = new SqlOutboxMessageRepository<Tree>(_outboxMessageDbContext);
-        await AddMessageToDatabaseAsync(BuildOutboxMessageSqlRow());
+        var outboxMessageRow = BuildOutboxMessageSqlRow();
+        await AddMessageToDatabaseAsync(outboxMessageRow);
         var messages = await sut.GetAsync();
 
         Assert.Single(messages);
+        AssertPropertiesReturned(outboxMessageRow, messages.Single());
     }
 
     [Theory]
     [InlineData(1, 0)]
     [InlineData(-1, 1)]
-    public async Task GivenNewInstance_WhenIGetMessages_ThenMessagesWithAnExpiredLockAreReturned(
+    public async Task GivenNewInstance_WhenIGetMessages_ThenMessagesWithAnExpiredLockAreReturnedWithAllProperties(
         int secondsTillLockExpires, int expectedMessageCount)
     {
         var sut = new SqlOutboxMessageRepository<Tree>(_outboxMessageDbContext);
-        await AddMessageToDatabaseAsync(BuildOutboxMessageSqlRow(DateTime.UtcNow.AddSeconds(secondsTillLockExpires)));
+        var outboxMessageRow = BuildOutboxMessageSqlRow(DateTime.UtcNow.AddSeconds(secondsTillLockExpires));
+        await AddMessageToDatabaseAsync(outboxMessageRow);
         var messages = await sut.GetAsync();
 
         Assert.Equal(expectedMessageCount, messages.Count());
+        AssertPropertiesReturned(outboxMessageRow, messages.FirstOrDefault());
     }
-    
+
     [Theory]
     [InlineData(1, 0)]
     [InlineData(-1, 1)]
-    public async Task GivenNewInstance_WhenIGetMessages_ThenMessagesWithARetryAfterTimeAfterUtcNowAreReturned(
+    public async Task GivenNewInstance_WhenIGetMessages_ThenMessagesWithARetryAfterTimeAfterUtcNowAreReturnedWithAllProperties(
         int secondsTillRetryAfterElapses, int expectedMessageCount)
     {
         var sut = new SqlOutboxMessageRepository<Tree>(_outboxMessageDbContext);
-        await AddMessageToDatabaseAsync(BuildOutboxMessageSqlRow(null, 
-            DateTime.UtcNow.AddSeconds(secondsTillRetryAfterElapses)));
+        var outboxMessageRow = BuildOutboxMessageSqlRow(null,
+                    DateTime.UtcNow.AddSeconds(secondsTillRetryAfterElapses));
+        await AddMessageToDatabaseAsync(outboxMessageRow);
         var messages = await sut.GetAsync();
 
         Assert.Equal(expectedMessageCount, messages.Count());
+        AssertPropertiesReturned(outboxMessageRow, messages.FirstOrDefault());
     }
 
     private static DateTime? ParseDate(string date)
@@ -162,11 +168,24 @@ public class SqlOutboxMessageRepositoryTests
         DateTime? retryAfter = null)
         => new()
         {
-            AttemptCount = 1,
+            AttemptCount = new Random().Next(0,100),
             CorrelationId = Guid.NewGuid().ToString(),
             LastAttempt = DateTime.UtcNow.AddDays(-1),
             MessageBlob = JsonSerializer.Serialize(new Tree("Sycamore", 5)),
             LockExpiry = lockExpiry,
             RetryAfter = retryAfter
         };
+
+    private static void AssertPropertiesReturned(OutboxMessageSqlRow outboxMessageRow, OutboxMessage<Tree>? outboxMessage)
+    {
+        if (outboxMessage is not null)
+        {
+            Assert.Equal(outboxMessageRow.MessageBlob, JsonSerializer.Serialize(outboxMessage.MessageObject));
+            Assert.Equal(outboxMessageRow.CorrelationId, outboxMessage.CorrelationId);
+            Assert.Equal(outboxMessageRow.AttemptCount, outboxMessage.AttemptCount);
+            Assert.Equal(outboxMessageRow.LastAttempt, outboxMessage.LastAttempt);
+            Assert.Equal(outboxMessageRow.LockExpiry, outboxMessage.LockExpiry);
+            Assert.Equal(outboxMessageRow.RetryAfter, outboxMessage.RetryAfter);
+        }
+    }
 }
