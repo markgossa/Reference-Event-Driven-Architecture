@@ -2,4 +2,4 @@
 
 namespace BookingGenerator.Application.Services.Bookings.Commands.MakeBooking;
 
-public record MakeBookingCommand(string FirstName, string LastName, DateOnly StartDate, DateOnly EndDate, string Destination, decimal Price) : IRequest;
+public record MakeBookingCommand(string FirstName, string LastName, DateTime StartDate, DateTime EndDate, string Destination, decimal Price) : IRequest;

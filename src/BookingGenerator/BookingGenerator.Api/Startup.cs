@@ -45,7 +45,7 @@ public class Startup
                 foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
                 {
                     o.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json",
-                        $"GreatEscapes.OrderGenerator.API - {description.GroupName.ToUpper()}");
+                        $"GreatEscapes.BookingGenerator.Api - {description.GroupName.ToUpper()}");
                 }
             });
         }

@@ -95,8 +95,8 @@ public class WebBffHttpClientTests
 
         return webBffBookingRequest?.FirstName == booking.FirstName
             && webBffBookingRequest?.LastName == booking.LastName
-            && webBffBookingRequest.StartDate == booking.StartDate.ToDateTime(default)
-            && webBffBookingRequest.EndDate == booking.EndDate.ToDateTime(default)
+            && webBffBookingRequest.StartDate == booking.StartDate
+            && webBffBookingRequest.EndDate == booking.EndDate
             && webBffBookingRequest.Destination == booking.Destination
             && webBffBookingRequest.Price == booking.Price;
     }
@@ -110,5 +110,5 @@ public class WebBffHttpClientTests
 
     private static Booking BuildNewBooking(string firstName, string lastName, string startDate, string endDate,
         string destination, decimal price)
-            => new(firstName, lastName, DateOnly.Parse(startDate), DateOnly.Parse(endDate), destination, price);
+            => new(firstName, lastName, DateTime.Parse(startDate), DateTime.Parse(endDate), destination, price);
 }

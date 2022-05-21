@@ -26,7 +26,8 @@ public class BookingServiceWithOutbox : IBookingService
     public async Task BookAsync(Booking booking, string? correlationId = null)
     {
         correlationId = _correlationIdGenerator.CorrelationId;
-        await _messageOutbox.AddAsync(BuildOutboxMessage(booking));
+        var outboxMessage = BuildOutboxMessage(booking);
+        await _messageOutbox.AddAsync(outboxMessage);
         
         try
         {
@@ -34,7 +35,7 @@ public class BookingServiceWithOutbox : IBookingService
         }
         catch (Exception ex)
         {
-            await _messageOutbox.FailAsync(new List<string> { correlationId });
+            await _messageOutbox.FailAsync(new List<OutboxMessage<Booking>> { outboxMessage });
             LogWarning(correlationId, ex);
 
             return;
@@ -43,38 +44,10 @@ public class BookingServiceWithOutbox : IBookingService
         await _messageOutbox.RemoveAsync(new List<string> { correlationId });
     }
 
-    public async Task ReplayBookingsAsync()
-    {
-        var successfulCorrelationIds = new List<string>();
-        var failedCorrelationIds = new List<string>();
-        foreach (var message in await _messageOutbox.GetAsync())
-        {
-            await TryReplayMessagesAsync(message, successfulCorrelationIds, failedCorrelationIds);
-        }
-
-        await _messageOutbox.RemoveAsync(successfulCorrelationIds);
-        await _messageOutbox.FailAsync(failedCorrelationIds);
-    }
-
     private void LogWarning(string correlationId, Exception ex) 
         => _logger.LogWarning(ex, "Message could not be processed. CorrelationId: {correlationId}",
             correlationId);
 
     private OutboxMessage<Booking> BuildOutboxMessage(Booking booking)
         => new(_correlationIdGenerator.CorrelationId, booking);
-
-    private async Task TryReplayMessagesAsync(OutboxMessage<Booking> message,
-        List<string> successfulCorrelationIds, List<string> failedCorrelationIds)
-    {
-        try
-        {
-            await _bookingService.BookAsync(message.MessageObject, message.CorrelationId);
-            successfulCorrelationIds.Add(message.CorrelationId);
-        }
-        catch (Exception ex)
-        {
-            failedCorrelationIds.Add(message.CorrelationId);
-            LogWarning(message.CorrelationId, ex);
-        }
-    }
 }

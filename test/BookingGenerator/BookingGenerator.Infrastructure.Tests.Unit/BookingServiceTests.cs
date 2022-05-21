@@ -64,7 +64,7 @@ public class BookingServiceTests
 
     private static Booking BuildNewBooking(string firstName, string lastName, string startDate, string endDate,
         string destination, decimal price)
-            => new(firstName, lastName, DateOnly.Parse(startDate), DateOnly.Parse(endDate), destination, price);
+            => new(firstName, lastName, DateTime.Parse(startDate), DateTime.Parse(endDate), destination, price);
 
     private static ICorrelationIdGenerator SetUpMockCorrelationIdGenerator(string correlationId)
     {
