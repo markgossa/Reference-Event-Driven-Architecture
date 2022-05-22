@@ -37,15 +37,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Messaging.Outbox.Sql
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common.Messaging.Outbox.Sql.Tests.Unit", "test\Common\Common.Messaging.Outbox.Sql.Tests.Unit\Common.Messaging.Outbox.Sql.Tests.Unit.csproj", "{72DEE7B8-B9B2-4D61-88E3-B92ED557C7DB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebBffApi", "WebBffApi", "{D34D142B-8075-40A7-AC63-CF32702F7E11}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebBff", "WebBff", "{D34D142B-8075-40A7-AC63-CF32702F7E11}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebBff.Api", "src\WebBffApi\WebBff.Api\WebBff.Api.csproj", "{154D2EF8-29DA-42C1-9766-7777C986C717}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebBff.Api", "src\WebBff\WebBff.Api\WebBff.Api.csproj", "{154D2EF8-29DA-42C1-9766-7777C986C717}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebBff.Application", "src\WebBffApi\WebBff.Application\WebBff.Application.csproj", "{6AB1AC21-7B6C-401C-88EE-2A42168B8AA3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebBff.Application", "src\WebBff\WebBff.Application\WebBff.Application.csproj", "{6AB1AC21-7B6C-401C-88EE-2A42168B8AA3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebBff.Domain", "src\WebBffApi\WebBff.Domain\WebBff.Domain.csproj", "{DB352BC5-78E1-474A-A0DB-1D18F816B59A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebBff.Domain", "src\WebBff\WebBff.Domain\WebBff.Domain.csproj", "{DB352BC5-78E1-474A-A0DB-1D18F816B59A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebBff.Infrastructure", "src\WebBffApi\WebBff.Infrastructure\WebBff.Infrastructure.csproj", "{D4D6DFDD-DFD8-4E33-848F-0443532520E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebBff.Infrastructure", "src\WebBff\WebBff.Infrastructure\WebBff.Infrastructure.csproj", "{D4D6DFDD-DFD8-4E33-848F-0443532520E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
