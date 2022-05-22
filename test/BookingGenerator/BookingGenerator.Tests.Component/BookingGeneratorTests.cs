@@ -41,7 +41,7 @@ public class BookingGeneratorTests : IClassFixture<ApiTestsContext>
     [Theory]
     [InlineData("Joe", "Bloggs", 0, 5, "Greece", 100.43, _apiRoute)]
     [InlineData("John", "Smith", 10, 15, "Nice", 100.43, _apiRouteV1)]
-    public async Task GivenValidTradeRequest_WhenPostEndpointCalledWithoutCorrelationIdHeader_ThenReturnsNewCorrelationIdHeader(
+    public async Task GivenValidBookingRequest_WhenPostEndpointCalledWithoutCorrelationIdHeader_ThenReturnsNewCorrelationIdHeader(
         string firstName, string lastName, int daysTillStartDate, int daysTillEndDate, string destination,
         decimal price, string apiRoute)
     {
@@ -58,7 +58,7 @@ public class BookingGeneratorTests : IClassFixture<ApiTestsContext>
     [Theory]
     [InlineData("Unlucky", "Bloggs", 0, 5, "Greece", 100.43, _apiRoute)]
     [InlineData("Unlucky", "Smith", 10, 15, "Nice", 100.43, _apiRouteV1)]
-    public async Task GivenValidTradeRequest_WhenPostEndpointCalledAndThereIsAnError_ThenReturnsInternalServerError(
+    public async Task GivenValidBookingRequest_WhenPostEndpointCalledAndThereIsAnError_ThenReturnsInternalServerError(
         string firstName, string lastName, int daysTillStartDate, int daysTillEndDate, string destination,
         decimal price, string apiRoute)
     {

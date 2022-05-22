@@ -53,6 +53,7 @@ public class MessageOutboxTests
 
         Assert.Equal(expectedOutboxMessages, outboxMessages);
         Assert.True(outboxMessages.All(m => IsDateTimeNow(m.LockExpiry, addMilliseconds: 30000)));
+        _mockOutboxMessageRepository.Verify(m => m.UpdateAsync(outboxMessages), Times.Once());
     }
 
     [Fact]

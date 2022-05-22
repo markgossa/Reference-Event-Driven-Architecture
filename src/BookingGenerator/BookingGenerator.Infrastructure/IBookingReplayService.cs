@@ -2,4 +2,5 @@
 
 public interface IBookingReplayService
 {
+    Task ReplayBookingsAsync();
 }

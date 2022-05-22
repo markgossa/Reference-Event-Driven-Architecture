@@ -37,6 +37,12 @@ public class SqlOutboxMessageRepository<T> : IOutboxMessageRepository<T>
             .Select(m =>
                 new OutboxMessage<T>(m.CorrelationId, 
                     JsonSerializer.Deserialize<T>(m.MessageBlob, new JsonSerializerOptions()))
+                {
+                    AttemptCount = m.AttemptCount,
+                    LastAttempt = m.LastAttempt,
+                    LockExpiry = m.LockExpiry,
+                    RetryAfter = m.RetryAfter
+                }
             ).ToListAsync();
 #nullable enable
 

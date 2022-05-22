@@ -17,6 +17,8 @@ public class MessageOutbox<T> : IMessageOutbox<T>
         var messages = await _outboxMessageRepository.GetAsync();
         LockMessages(messages);
 
+        await _outboxMessageRepository.UpdateAsync(messages);
+
         return messages;
     }
 
