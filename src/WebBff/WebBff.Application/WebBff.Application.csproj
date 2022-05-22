@@ -14,4 +14,8 @@
     <ProjectReference Include="..\WebBff.Domain\WebBff.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Repositories\" />
+  </ItemGroup>
+
 </Project>
