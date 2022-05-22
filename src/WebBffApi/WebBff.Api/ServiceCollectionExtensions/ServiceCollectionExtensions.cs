@@ -1,10 +1,10 @@
-﻿using BookingGenerator.Api.HostedServices;
-using BookingGenerator.Application.Common.Behaviours;
-using BookingGenerator.Application.Repositories;
-using BookingGenerator.Application.Services.Bookings.Commands.MakeBooking;
-using BookingGenerator.Domain.Models;
-using BookingGenerator.Infrastructure;
-using BookingGenerator.Infrastructure.HttpClients;
+﻿using WebBff.Api.HostedServices;
+using WebBff.Application.Common.Behaviours;
+using WebBff.Application.Repositories;
+using WebBff.Application.Services.Bookings.Commands.MakeBooking;
+using WebBff.Domain.Models;
+using WebBff.Infrastructure;
+using WebBff.Infrastructure.HttpClients;
 using Common.Messaging.CorrelationIdGenerator;
 using Common.Messaging.Outbox;
 using Common.Messaging.Outbox.Repositories;
@@ -19,7 +19,7 @@ using Polly;
 using Polly.Extensions.Http;
 using System.Net.Http;
 
-namespace BookingGenerator.Api.ServiceCollectionExtensions;
+namespace WebBff.Api.ServiceCollectionExtensions;
 
 public static class ServiceCollectionExtensions
 {

@@ -1,12 +1,12 @@
-﻿using BookingGenerator.Domain.Models;
-using BookingGenerator.Infrastructure.Models;
+﻿using WebBff.Domain.Models;
+using WebBff.Infrastructure.Models;
 using Microsoft.Extensions.Options;
 using System.Net.Http;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 
-namespace BookingGenerator.Infrastructure.HttpClients;
+namespace WebBff.Infrastructure.HttpClients;
 public class WebBffHttpClient : IWebBffHttpClient
 {
     private readonly HttpClient _httpClient;

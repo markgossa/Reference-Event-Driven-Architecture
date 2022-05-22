@@ -1,4 +1,4 @@
-﻿namespace BookingGenerator.Infrastructure;
+﻿namespace WebBff.Infrastructure;
 
 public interface IBookingReplayService
 {

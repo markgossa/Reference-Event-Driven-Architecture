@@ -1,8 +1,8 @@
-﻿using BookingGenerator.Infrastructure;
+﻿using WebBff.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace BookingGenerator.Api.HostedServices;
+namespace WebBff.Api.HostedServices;
 
 internal class BookingReplayHostedService : IHostedService, IDisposable
 {

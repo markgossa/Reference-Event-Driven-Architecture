@@ -30,9 +30,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Common\Common.Messaging.CorrelationIdGenerator\Common.Messaging.CorrelationIdGenerator.csproj" />
     <ProjectReference Include="..\..\Common\Common.Messaging.Outbox.Sql\Common.Messaging.Outbox.Sql.csproj" />
-    <ProjectReference Include="..\BookingGenerator.Application\BookingGenerator.Application.csproj" />
-    <ProjectReference Include="..\BookingGenerator.Infrastructure\BookingGenerator.Infrastructure.csproj" />
+    <ProjectReference Include="..\WebBff.Application\WebBff.Application.csproj" />
+    <ProjectReference Include="..\WebBff.Domain\WebBff.Domain.csproj" />
+    <ProjectReference Include="..\WebBff.Infrastructure\WebBff.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

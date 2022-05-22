@@ -1,6 +1,6 @@
-﻿using BookingGenerator.Domain.Models;
+﻿using WebBff.Domain.Models;
 
-namespace BookingGenerator.Application.Repositories;
+namespace WebBff.Application.Repositories;
 
 public interface IBookingService
 {

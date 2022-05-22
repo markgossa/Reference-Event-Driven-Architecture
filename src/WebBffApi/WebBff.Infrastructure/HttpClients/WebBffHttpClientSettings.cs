@@ -1,6 +1,6 @@
 ﻿#nullable disable
 
-namespace BookingGenerator.Infrastructure.HttpClients;
+namespace WebBff.Infrastructure.HttpClients;
 public class WebBffHttpClientSettings
 {
     public string WebBffBookingsUrl { get; set; }

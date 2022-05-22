@@ -1,11 +1,11 @@
-﻿using BookingGenerator.Application.Repositories;
-using BookingGenerator.Domain.Models;
+﻿using WebBff.Application.Repositories;
+using WebBff.Domain.Models;
 using Common.Messaging.CorrelationIdGenerator;
 using Common.Messaging.Outbox;
 using Common.Messaging.Outbox.Models;
 using Microsoft.Extensions.Logging;
 
-namespace BookingGenerator.Infrastructure;
+namespace WebBff.Infrastructure;
 public class BookingServiceWithOutbox : IBookingService
 {
     private readonly IBookingService _bookingService;

@@ -3,7 +3,7 @@ using Microsoft.OpenApi.Any;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace BookingGenerator.Api.Swagger;
+namespace WebBff.Api.Swagger;
 
 public class SwaggerDefaultValues : IOperationFilter
 {

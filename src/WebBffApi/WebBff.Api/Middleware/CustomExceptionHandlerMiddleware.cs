@@ -1,10 +1,10 @@
-﻿using BookingGenerator.Application.Exceptions;
+﻿using WebBff.Application.Exceptions;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using System.Net;
 using System.Text.Json;
 
-namespace BookingGenerator.Api.Middleware;
+namespace WebBff.Api.Middleware;
 
 public class CustomExceptionHandlerMiddleware
 {

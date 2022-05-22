@@ -1,8 +1,8 @@
-﻿using BookingGenerator.Application.Repositories;
-using BookingGenerator.Domain.Models;
+﻿using WebBff.Application.Repositories;
+using WebBff.Domain.Models;
 using MediatR;
 
-namespace BookingGenerator.Application.Services.Bookings.Commands.MakeBooking;
+namespace WebBff.Application.Services.Bookings.Commands.MakeBooking;
 
 internal class MakeBookingCommandHandler : IRequestHandler<MakeBookingCommand>
 {

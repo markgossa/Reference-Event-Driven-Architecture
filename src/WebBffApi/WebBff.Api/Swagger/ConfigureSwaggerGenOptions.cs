@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace BookingGenerator.Api.Swagger;
+namespace WebBff.Api.Swagger;
 
 public class ConfigureSwaggerGenOptions : IConfigureOptions<SwaggerGenOptions>
 {
@@ -25,7 +25,7 @@ public class ConfigureSwaggerGenOptions : IConfigureOptions<SwaggerGenOptions>
     {
         var info = new OpenApiInfo()
         {
-            Title = "GreatEscapes.BookingGenerator.API",
+            Title = "GreatEscapes.WebBff.API",
             Version = description.ApiVersion.ToString()
         };
 

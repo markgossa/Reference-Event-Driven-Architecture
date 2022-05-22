@@ -1,8 +1,8 @@
-﻿using BookingGenerator.Api.Middleware;
+﻿using WebBff.Api.Middleware;
 using Common.Messaging.CorrelationIdGenerator;
 using Microsoft.AspNetCore.Builder;
 
-namespace BookingGenerator.Api.ApplicationBuilderExtensions;
+namespace WebBff.Api.ApplicationBuilderExtensions;
 
 public static class ApplicationBuilderExtensions
 {

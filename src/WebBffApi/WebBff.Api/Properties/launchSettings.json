@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "BookingGenerator.Api": {
+    "WebBff.Api": {
       "commandName": "Project",
       "launchUrl": "swagger",
       "environmentVariables": {

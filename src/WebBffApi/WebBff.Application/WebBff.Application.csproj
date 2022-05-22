@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\BookingGenerator.Domain\BookingGenerator.Domain.csproj" />
+    <ProjectReference Include="..\WebBff.Domain\WebBff.Domain.csproj" />
   </ItemGroup>
 
 </Project>

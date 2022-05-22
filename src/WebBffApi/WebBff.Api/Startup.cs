@@ -1,6 +1,6 @@
-﻿using BookingGenerator.Api.ApplicationBuilderExtensions;
-using BookingGenerator.Api.ServiceCollectionExtensions;
-using BookingGenerator.Api.Swagger;
+﻿using WebBff.Api.ApplicationBuilderExtensions;
+using WebBff.Api.ServiceCollectionExtensions;
+using WebBff.Api.Swagger;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -13,7 +13,7 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.IO;
 using System.Reflection;
 
-namespace BookingGenerator.Api;
+namespace WebBff.Api;
 
 public class Startup
 {
@@ -46,7 +46,7 @@ public class Startup
                 foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
                 {
                     o.SwaggerEndpoint($"/swagger/{description.GroupName}/swagger.json",
-                        $"GreatEscapes.BookingGenerator.Api - {description.GroupName.ToUpper()}");
+                        $"GreatEscapes.WebBff.Api - {description.GroupName.ToUpper()}");
                 }
             });
         }

@@ -1,4 +1,4 @@
-﻿namespace BookingGenerator.Infrastructure.Models;
+﻿namespace WebBff.Infrastructure.Models;
 public class WebBffBookingRequest
 {
     public string FirstName { get; }

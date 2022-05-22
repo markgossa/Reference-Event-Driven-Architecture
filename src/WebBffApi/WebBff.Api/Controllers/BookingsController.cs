@@ -1,9 +1,9 @@
-﻿using BookingGenerator.Api.Models;
-using BookingGenerator.Application.Services.Bookings.Commands.MakeBooking;
+﻿using WebBff.Api.Models;
+using WebBff.Application.Services.Bookings.Commands.MakeBooking;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BookingGenerator.Api.Controllers;
+namespace WebBff.Api.Controllers;
 
 [ApiVersion("1.0")]
 [Route("[controller]")]

@@ -1,9 +1,9 @@
-﻿using BookingGenerator.Application.Repositories;
-using BookingGenerator.Domain.Models;
-using BookingGenerator.Infrastructure.HttpClients;
+﻿using WebBff.Application.Repositories;
+using WebBff.Domain.Models;
+using WebBff.Infrastructure.HttpClients;
 using Common.Messaging.CorrelationIdGenerator;
 
-namespace BookingGenerator.Infrastructure;
+namespace WebBff.Infrastructure;
 
 public class BookingService : IBookingService
 {
