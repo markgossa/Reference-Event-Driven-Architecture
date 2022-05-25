@@ -1,7 +1,7 @@
 ﻿using BookingGenerator.Application.Repositories;
 using BookingGenerator.Domain.Models;
 using BookingGenerator.Infrastructure.HttpClients;
-using Common.Messaging.CorrelationIdGenerator;
+using Common.CorrelationIdGenerator;
 
 namespace BookingGenerator.Infrastructure;
 

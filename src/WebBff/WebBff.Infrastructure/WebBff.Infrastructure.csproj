@@ -11,8 +11,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Common\Common.Messaging.CorrelationIdGenerator\Common.Messaging.CorrelationIdGenerator.csproj" />
-    <ProjectReference Include="..\..\Common\Common.Messaging.Outbox\Common.Messaging.Outbox.csproj" />
     <ProjectReference Include="..\WebBff.Application\WebBff.Application.csproj" />
     <ProjectReference Include="..\WebBff.Domain\WebBff.Domain.csproj" />
   </ItemGroup>

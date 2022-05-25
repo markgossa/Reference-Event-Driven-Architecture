@@ -1,5 +1,5 @@
 ﻿using BookingGenerator.Domain.Models;
-using Common.Messaging.Outbox;
+using Common.Messaging.Folder;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -14,9 +14,9 @@ public class BookingReplayServiceTests : BookingServiceWithOutboxTestsBase
         var outboxMessages = BuildOutboxMessages();
         mockMessageOutbox.Setup(m => m.GetAsync()).ReturnsAsync(outboxMessages);
 
-        var sut = new BookingReplayService(_mockBookingService.Object, mockMessageOutbox.Object, 
+        var sut = new BookingReplayService(_mockBookingService.Object, mockMessageOutbox.Object,
             new Mock<ILogger<BookingReplayService>>().Object);
-        await sut.ReplayBookingsAsync();                
+        await sut.ReplayBookingsAsync();
 
         AssertGetsOutboxMessages(mockMessageOutbox);
         AssertOutboxMessagesAttempted(outboxMessages);

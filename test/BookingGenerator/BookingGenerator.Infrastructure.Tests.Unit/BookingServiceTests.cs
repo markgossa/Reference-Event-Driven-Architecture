@@ -1,6 +1,6 @@
 using BookingGenerator.Domain.Models;
 using BookingGenerator.Infrastructure.HttpClients;
-using Common.Messaging.CorrelationIdGenerator;
+using Common.CorrelationIdGenerator;
 using Moq;
 using System.Net.Http;
 using Xunit;

@@ -11,8 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Common\Common.Messaging.CorrelationIdGenerator\Common.Messaging.CorrelationIdGenerator.csproj" />
-    <ProjectReference Include="..\..\Common\Common.Messaging.Outbox\Common.Messaging.Outbox.csproj" />
+    <ProjectReference Include="..\..\Common\Common.CorrelationIdGenerator\Common.CorrelationIdGenerator.csproj" />
+    <ProjectReference Include="..\..\Common\Common.Messaging.Folder\Common.Messaging.Folder.csproj" />
     <ProjectReference Include="..\BookingGenerator.Application\BookingGenerator.Application.csproj" />
     <ProjectReference Include="..\BookingGenerator.Domain\BookingGenerator.Domain.csproj" />
   </ItemGroup>

@@ -22,10 +22,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Common\Common.Messaging.CorrelationIdGenerator\Common.Messaging.CorrelationIdGenerator.csproj" />
+    <ProjectReference Include="..\..\..\src\Common\Common.CorrelationIdGenerator\Common.CorrelationIdGenerator.csproj" />
     <ProjectReference Include="..\..\..\src\WebBff\WebBff.Api\WebBff.Api.csproj" />
     <ProjectReference Include="..\..\..\src\WebBff\WebBff.Infrastructure\WebBff.Infrastructure.csproj" />
-    <ProjectReference Include="..\..\..\src\Common\Common.Messaging.Outbox\Common.Messaging.Outbox.csproj" />
   </ItemGroup>
 
 </Project>
