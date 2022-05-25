@@ -5,10 +5,10 @@ using BookingGenerator.Application.Services.Bookings.Commands.MakeBooking;
 using BookingGenerator.Domain.Models;
 using BookingGenerator.Infrastructure;
 using BookingGenerator.Infrastructure.HttpClients;
-using Common.Messaging.CorrelationIdGenerator;
-using Common.Messaging.Outbox;
-using Common.Messaging.Outbox.Repositories;
-using Common.Messaging.Outbox.Sql;
+using Common.CorrelationIdGenerator;
+using Common.Messaging.Folder;
+using Common.Messaging.Folder.Repositories;
+using Common.Messaging.Repository.Sql;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -35,11 +35,10 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddScoped<IBookingService, BookingServiceWithOutbox>(sp => BuildBookingServiceWithOutbox(sp));
-        services.AddScoped<ICorrelationIdGenerator, CorrelationIdGenerator>();
         services.AddScoped<IBookingReplayService, BookingReplayService>(sp => BuildBookingReplayService(sp));
-        services.AddScoped<IMessageOutbox<Booking>, MessageOutbox<Booking>>();
-        services.AddScoped<IOutboxMessageRepository<Booking>, SqlOutboxMessageRepository<Booking>>();
-        services.AddDbContextPool<OutboxMessageDbContext>(o => o.UseSqlServer(configuration["ConnectionStrings:Outbox"]));
+        services.AddScoped<IMessageOutbox<Booking>, MessageFolder<Booking>>();
+        services.AddScoped<IMessageRepository<Booking>, SqlMessageRepository<Booking>>();
+        services.AddDbContextPool<MessageDbContext>(o => o.UseSqlServer(configuration["ConnectionStrings:Outbox"]));
         AddWebBffHttpClient(services, configuration);
 
         return services;

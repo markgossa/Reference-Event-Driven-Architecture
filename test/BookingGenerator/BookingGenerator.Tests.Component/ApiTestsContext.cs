@@ -1,5 +1,4 @@
 ﻿using BookingGenerator.Api;
-using Common.Messaging.CorrelationIdGenerator;
 using BookingGenerator.Application.Repositories;
 using BookingGenerator.Domain.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -7,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System.Net.Http;
+using Common.CorrelationIdGenerator;
 
 namespace BookingGenerator.Tests.Component;
 

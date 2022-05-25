@@ -1,7 +1,7 @@
 ﻿using BookingGenerator.Application.Repositories;
 using BookingGenerator.Domain.Models;
-using Common.Messaging.Outbox;
-using Common.Messaging.Outbox.Models;
+using Common.Messaging.Folder;
+using Common.Messaging.Folder.Models;
 using Microsoft.Extensions.Logging;
 
 namespace BookingGenerator.Infrastructure;
@@ -22,7 +22,7 @@ public class BookingReplayService : IBookingReplayService
     public async Task ReplayBookingsAsync()
     {
         var successfulCorrelationIds = new List<string>();
-        var failedMessages = new List<OutboxMessage<Booking>>();
+        var failedMessages = new List<Message<Booking>>();
         foreach (var message in await _messageOutbox.GetAsync())
         {
             await TryReplayMessagesAsync(message, successfulCorrelationIds, failedMessages);
@@ -32,8 +32,8 @@ public class BookingReplayService : IBookingReplayService
         await _messageOutbox.FailAsync(failedMessages);
     }
 
-    private async Task TryReplayMessagesAsync(OutboxMessage<Booking> message,
-        List<string> successfulCorrelationIds, List<OutboxMessage<Booking>> failedMessages)
+    private async Task TryReplayMessagesAsync(Message<Booking> message,
+        List<string> successfulCorrelationIds, List<Message<Booking>> failedMessages)
     {
         try
         {

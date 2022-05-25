@@ -1,5 +1,5 @@
 ﻿using BookingGenerator.Domain.Models;
-using Common.Messaging.Outbox.Models;
+using Common.Messaging.Folder.Models;
 using Xunit;
 
 namespace BookingGenerator.Infrastructure.Tests.Unit;
@@ -31,7 +31,7 @@ public class BookingServiceWithOutboxTests : BookingServiceWithOutboxTestsBase
         await MakeNewBookingAsync(booking, SetUpMockCorrelationIdGenerator(correlationId));
 
         AssertBookingAttempted(booking);
-        AssertFailedMessagesSetAsFailedInOutbox(_mockMessageOutbox, new List<OutboxMessage<Booking>> { new(correlationId, booking) });
+        AssertFailedMessagesSetAsFailedInOutbox(_mockMessageOutbox, new List<Message<Booking>> { new(correlationId, booking) });
         AssertNoMessagesRemovedFromOutbox();
     }
 

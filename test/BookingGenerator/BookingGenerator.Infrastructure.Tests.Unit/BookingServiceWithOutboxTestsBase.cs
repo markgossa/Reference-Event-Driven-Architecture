@@ -1,8 +1,8 @@
 ﻿using BookingGenerator.Application.Repositories;
 using BookingGenerator.Domain.Models;
-using Common.Messaging.CorrelationIdGenerator;
-using Common.Messaging.Outbox;
-using Common.Messaging.Outbox.Models;
+using Common.CorrelationIdGenerator;
+using Common.Messaging.Folder;
+using Common.Messaging.Folder.Models;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System.Net.Http;
@@ -27,16 +27,16 @@ public class BookingServiceWithOutboxTestsBase
 
     protected static void AssertMessageAddedToOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox,
         Booking booking, string correlationId)
-        => mockMessageOutbox.Verify(m => m.AddAsync(It.Is<OutboxMessage<Booking>>(m =>
+        => mockMessageOutbox.Verify(m => m.AddAsync(It.Is<Message<Booking>>(m =>
             m.CorrelationId == correlationId && m.MessageObject == booking)), Times.Once);
 
     protected static void AssertFailedMessagesSetAsFailedInOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox,
-        IEnumerable<OutboxMessage<Booking>> expectedFailedMessages)
-            => mockMessageOutbox.Verify(m => m.FailAsync(It.Is<IEnumerable<OutboxMessage<Booking>>>(failedBookings =>
+        IEnumerable<Message<Booking>> expectedFailedMessages)
+            => mockMessageOutbox.Verify(m => m.FailAsync(It.Is<IEnumerable<Message<Booking>>>(failedBookings =>
                 FailedMessageCorrelationIdsMatchBookings(failedBookings, expectedFailedMessages))), Times.Once);
 
     protected static void AssertFailedMessagesNotRemovedFromOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox, IEnumerable
-        <OutboxMessage<Booking>> failedMessages)
+        <Message<Booking>> failedMessages)
             => mockMessageOutbox.Verify(m => m.RemoveAsync(failedMessages.Select(m => m.CorrelationId)), Times.Never);
 
     protected static void AssertSuccessfulMessagesRemovedFromOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox,
@@ -47,24 +47,24 @@ public class BookingServiceWithOutboxTestsBase
         string endDate, string destination, decimal price)
             => new(firstName, lastName, DateTime.Parse(startDate), DateTime.Parse(endDate), destination, price);
 
-    protected static IEnumerable<OutboxMessage<Booking>> BuildOutboxMessages()
-        => new List<OutboxMessage<Booking>>
+    protected static IEnumerable<Message<Booking>> BuildOutboxMessages()
+        => new List<Message<Booking>>
             {
-                new OutboxMessage<Booking>(Guid.NewGuid().ToString(),
+                new Message<Booking>(Guid.NewGuid().ToString(),
                     BuildNewBooking("Joe", "Bloggs", "10/07/2022", "25/07/2022", "Malta", 500.43m)),
 
-                new OutboxMessage<Booking>(Guid.NewGuid().ToString(),
+                new Message<Booking>(Guid.NewGuid().ToString(),
                     BuildNewBooking("John", "Smith", "11/07/2022", "24/07/2022", "Corfu", 305m)),
 
-                new OutboxMessage<Booking>(Guid.NewGuid().ToString(),
+                new Message<Booking>(Guid.NewGuid().ToString(),
                     BuildNewBooking(_failedBooking, "Bloggs", "10/07/2022", "25/07/2022", "Malta", 500.43m)),
 
-                new OutboxMessage<Booking>(Guid.NewGuid().ToString(),
+                new Message<Booking>(Guid.NewGuid().ToString(),
                     BuildNewBooking(_failedBooking, "Smith", "11/07/2022", "24/07/2022", "Corfu", 305m))
             }.AsEnumerable();
 
-    protected static bool FailedMessageCorrelationIdsMatchBookings(IEnumerable<OutboxMessage<Booking>> failedBookings,
-        IEnumerable<OutboxMessage<Booking>> expectedFailedMessages)
+    protected static bool FailedMessageCorrelationIdsMatchBookings(IEnumerable<Message<Booking>> failedBookings,
+        IEnumerable<Message<Booking>> expectedFailedMessages)
     {
         var failedCorrelationIds = failedBookings.Select(f => f.CorrelationId).ToList();
         var expectedFailedCorrelationIds = expectedFailedMessages.Select(f => f.CorrelationId).ToList();
@@ -85,10 +85,10 @@ public class BookingServiceWithOutboxTestsBase
         return true;
     }
 
-    protected static IEnumerable<OutboxMessage<Booking>> GetFailedOutboxMessages(IEnumerable<OutboxMessage<Booking>> outboxMessages)
+    protected static IEnumerable<Message<Booking>> GetFailedOutboxMessages(IEnumerable<Message<Booking>> outboxMessages)
         => outboxMessages.Where(m => m.MessageObject.FirstName == _failedBooking);
 
-    protected static IEnumerable<string> GetSuccessfulOutboxMessageCorrelationIds(IEnumerable<OutboxMessage<Booking>> outboxMessages)
+    protected static IEnumerable<string> GetSuccessfulOutboxMessageCorrelationIds(IEnumerable<Message<Booking>> outboxMessages)
         => outboxMessages.Where(m => m.MessageObject.FirstName != _failedBooking).Select(m => m.CorrelationId);
 
     protected static Mock<ICorrelationIdGenerator> SetUpMockCorrelationIdGenerator(string correlationId)
@@ -108,7 +108,7 @@ public class BookingServiceWithOutboxTestsBase
     protected void AssertNoMessagesRemovedFromOutbox()
         => _mockMessageOutbox.Verify(m => m.RemoveAsync(It.IsAny<List<string>>()), Times.Never);
 
-    protected void AssertOutboxMessagesAttempted(IEnumerable<OutboxMessage<Booking>> messages)
+    protected void AssertOutboxMessagesAttempted(IEnumerable<Message<Booking>> messages)
     {
         foreach (var message in messages)
         {
@@ -127,6 +127,6 @@ public class BookingServiceWithOutboxTestsBase
 
     protected void SetUpMockMessageOutbox()
         => _mockMessageOutbox
-            .Setup(m => m.AddAsync(It.Is<OutboxMessage<Booking>>(b => b.MessageObject.FirstName == _failedOutboxAdd)))
+            .Setup(m => m.AddAsync(It.Is<Message<Booking>>(b => b.MessageObject.FirstName == _failedOutboxAdd)))
             .ThrowsAsync(new Exception());
 }

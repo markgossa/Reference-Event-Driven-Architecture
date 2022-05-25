@@ -1,8 +1,8 @@
 ﻿using BookingGenerator.Application.Repositories;
 using BookingGenerator.Domain.Models;
-using Common.Messaging.CorrelationIdGenerator;
-using Common.Messaging.Outbox;
-using Common.Messaging.Outbox.Models;
+using Common.CorrelationIdGenerator;
+using Common.Messaging.Folder;
+using Common.Messaging.Folder.Models;
 using Microsoft.Extensions.Logging;
 
 namespace BookingGenerator.Infrastructure;
@@ -35,7 +35,7 @@ public class BookingServiceWithOutbox : IBookingService
         }
         catch (Exception ex)
         {
-            await _messageOutbox.FailAsync(new List<OutboxMessage<Booking>> { outboxMessage });
+            await _messageOutbox.FailAsync(new List<Message<Booking>> { outboxMessage });
             LogWarning(correlationId, ex);
 
             return;
@@ -48,6 +48,6 @@ public class BookingServiceWithOutbox : IBookingService
         => _logger.LogWarning(ex, "Message could not be processed. CorrelationId: {correlationId}",
             correlationId);
 
-    private OutboxMessage<Booking> BuildOutboxMessage(Booking booking)
+    private Message<Booking> BuildOutboxMessage(Booking booking)
         => new(_correlationIdGenerator.CorrelationId, booking);
 }
