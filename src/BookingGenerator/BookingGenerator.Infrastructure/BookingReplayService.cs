@@ -21,33 +21,37 @@ public class BookingReplayService : IBookingReplayService
 
     public async Task ReplayBookingsAsync()
     {
-        var successfulCorrelationIds = new List<string>();
-        var failedMessages = new List<Message<Booking>>();
-        foreach (var message in await _messageOutbox.GetAsync())
+        foreach (var message in await _messageOutbox.GetAndLockAsync(4))
         {
-            await TryReplayMessagesAsync(message, successfulCorrelationIds, failedMessages);
+            await TryReplayMessagesAsync(message);
         }
-
-        await _messageOutbox.RemoveAsync(successfulCorrelationIds);
-        await _messageOutbox.FailAsync(failedMessages);
     }
 
-    private async Task TryReplayMessagesAsync(Message<Booking> message,
-        List<string> successfulCorrelationIds, List<Message<Booking>> failedMessages)
+    private async Task TryReplayMessagesAsync(Message<Booking> message)
     {
         try
         {
-            await _bookingService.BookAsync(message.MessageObject, message.CorrelationId);
-            successfulCorrelationIds.Add(message.CorrelationId);
+            await ReplayMessageAsync(message);
         }
         catch (Exception ex)
         {
-            failedMessages.Add(message);
-            LogWarning(message.CorrelationId, ex);
+            await SetMessageAsFailedAsync(message, ex);
         }
+    }
+
+    private async Task ReplayMessageAsync(Message<Booking> message)
+    {
+        await _bookingService.BookAsync(message.MessageObject, message.CorrelationId);
+        await _messageOutbox.RemoveAsync(new List<string> { message.CorrelationId });
+    }
+    
+    private async Task SetMessageAsFailedAsync(Message<Booking> message, Exception ex)
+    {
+        await _messageOutbox.FailAsync(new List<Message<Booking>> { message });
+        LogWarning(message.CorrelationId, ex);
     }
 
     private void LogWarning(string correlationId, Exception ex)
        => _logger.LogWarning(ex, "Message could not be processed. CorrelationId: {correlationId}",
-           correlationId);
+            correlationId);
 }

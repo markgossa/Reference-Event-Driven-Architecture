@@ -12,7 +12,7 @@ public class BookingReplayServiceTests : BookingServiceWithOutboxTestsBase
     {
         var mockMessageOutbox = new Mock<IMessageOutbox<Booking>>();
         var outboxMessages = BuildOutboxMessages();
-        mockMessageOutbox.Setup(m => m.GetAsync()).ReturnsAsync(outboxMessages);
+        mockMessageOutbox.Setup(m => m.GetAndLockAsync(It.IsAny<int>())).ReturnsAsync(outboxMessages);
 
         var sut = new BookingReplayService(_mockBookingService.Object, mockMessageOutbox.Object,
             new Mock<ILogger<BookingReplayService>>().Object);

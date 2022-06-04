@@ -12,18 +12,11 @@ public class MessageFolder<T> : IMessageOutbox<T>, IMessageInbox<T>
     public Task AddAsync(Message<T> message)
         => _messageRepository.AddAsync(message);
 
-    public async Task<IEnumerable<Message<T>>> GetAsync()
-    {
-        var messages = await _messageRepository.GetAsync();
-        LockMessages(messages);
+    public Task<IEnumerable<Message<T>>> GetAsync() => _messageRepository.GetAsync();
+    
+    public Task<IEnumerable<Message<T>>> GetAndLockAsync(int count) => _messageRepository.GetAndLockAsync(count);
 
-        await _messageRepository.UpdateAsync(messages);
-
-        return messages;
-    }
-
-    public Task RemoveAsync(IEnumerable<string> correlationIds)
-        => _messageRepository.RemoveAsync(correlationIds);
+    public Task RemoveAsync(IEnumerable<string> correlationIds) => _messageRepository.RemoveAsync(correlationIds);
 
     public Task FailAsync(IEnumerable<Message<T>> messages)
     {
@@ -37,14 +30,6 @@ public class MessageFolder<T> : IMessageOutbox<T>, IMessageInbox<T>
         foreach (var message in messages)
         {
             message.FailMessage();
-        }
-    }
-
-    private static void LockMessages(IEnumerable<Message<T>> messages)
-    {
-        foreach (var message in messages)
-        {
-            message.Lock();
         }
     }
 }

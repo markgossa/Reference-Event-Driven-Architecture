@@ -1,11 +1,11 @@
-﻿using BookingGenerator.Api.HostedServices;
+﻿using AspNet.CorrelationIdGenerator;
+using BookingGenerator.Api.HostedServices;
 using BookingGenerator.Application.Common.Behaviours;
 using BookingGenerator.Application.Repositories;
 using BookingGenerator.Application.Services.Bookings.Commands.MakeBooking;
 using BookingGenerator.Domain.Models;
 using BookingGenerator.Infrastructure;
 using BookingGenerator.Infrastructure.HttpClients;
-using Common.CorrelationIdGenerator;
 using Common.Messaging.Folder;
 using Common.Messaging.Folder.Repositories;
 using Common.Messaging.Repository.Sql;

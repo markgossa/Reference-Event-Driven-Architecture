@@ -6,12 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNet.CorrelationIdGenerator" Version="1.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Common\Common.CorrelationIdGenerator\Common.CorrelationIdGenerator.csproj" />
     <ProjectReference Include="..\..\Common\Common.Messaging.Folder\Common.Messaging.Folder.csproj" />
     <ProjectReference Include="..\BookingGenerator.Application\BookingGenerator.Application.csproj" />
     <ProjectReference Include="..\BookingGenerator.Domain\BookingGenerator.Domain.csproj" />

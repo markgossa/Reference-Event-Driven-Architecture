@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Common\Common.CorrelationIdGenerator\Common.CorrelationIdGenerator.csproj" />
+    <ProjectReference Include="..\..\..\src\Common\Contracts.Messages\Contracts.Messages.csproj" />
     <ProjectReference Include="..\..\..\src\WebBff\WebBff.Api\WebBff.Api.csproj" />
     <ProjectReference Include="..\..\..\src\WebBff\WebBff.Infrastructure\WebBff.Infrastructure.csproj" />
   </ItemGroup>

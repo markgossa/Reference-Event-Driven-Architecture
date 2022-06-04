@@ -1,4 +1,4 @@
-﻿using Common.CorrelationIdGenerator;
+﻿using AspNet.CorrelationIdGenerator;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +22,7 @@ public class ApiTestsContext : IDisposable
     public ApiTestsContext()
     {
         HttpClient = BuildWebApplicationFactory().CreateClient();
-        _mockCorrelationIdGenerator.Setup(m => m.CorrelationId).Returns(CorrelationId);
+        _mockCorrelationIdGenerator.Setup(m => m.Get()).Returns(CorrelationId);
         SetUpMockBookingRepository();
     }
 

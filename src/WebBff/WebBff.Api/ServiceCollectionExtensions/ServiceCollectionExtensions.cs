@@ -1,16 +1,12 @@
-﻿using Common.CorrelationIdGenerator;
-using Common.Messaging.Folder.Repositories;
-using Common.Messaging.Repository.Sql;
-using FluentValidation;
+﻿using FluentValidation;
+using MassTransit;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using WebBff.Api.HostedServices;
 using WebBff.Application.Common.Behaviours;
+using WebBff.Application.Repositories;
 using WebBff.Application.Services.Bookings.Commands.MakeBooking;
-using WebBff.Domain.Models;
-using Common.Messaging.Folder;
+using WebBff.Infrastructure;
 
 namespace WebBff.Api.ServiceCollectionExtensions;
 
@@ -19,21 +15,34 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddMediatorServices(this IServiceCollection services)
     {
         services.AddValidatorsFromAssembly(typeof(RequestValidationBehaviour<,>).Assembly);
-        services.AddMediatR(typeof(MakeBookingCommand));
+        services.AddMediatR(ConfigureMediatR, typeof(MakeBookingCommand));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(RequestValidationBehaviour<,>));
 
         return services;
     }
 
+    private static void ConfigureMediatR(MediatRServiceConfiguration configuration)
+        => configuration.AsScoped();
+
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddScoped<IMessageOutbox<Booking>, MessageFolder<Booking>>();
-        services.AddScoped<IMessageRepository<Booking>, SqlMessageRepository<Booking>>();
-        services.AddDbContextPool<MessageDbContext>(o => o.UseSqlServer(configuration["ConnectionStrings:Outbox"]));
+        services.AddScoped<IBookingRepository, BookingServiceBusRepository>();
 
         return services;
     }
 
-    public static IServiceCollection AddHostedServices(this IServiceCollection services)
-        => services.AddHostedService<BookingReplayHostedService>();
+    public static IServiceCollection AddBus(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddMassTransit(o =>
+        {
+            o.SetKebabCaseEndpointNameFormatter();
+            o.UsingAzureServiceBus((context, cfg) =>
+            {
+                cfg.Host(configuration["ServiceBusConnectionString"]);
+                cfg.ConfigureEndpoints(context);
+            });
+        });
+
+        return services;
+    }
 }

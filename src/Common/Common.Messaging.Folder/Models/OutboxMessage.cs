@@ -18,7 +18,7 @@ public class Message<T>
         SetLock();
     }
 
-    internal void Lock() => SetLock();
+    public void Lock() => SetLock();
 
     internal void FailMessage()
     {

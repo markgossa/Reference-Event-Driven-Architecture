@@ -6,7 +6,7 @@ using Moq;
 using Xunit;
 
 namespace Common.Messaging.Outbox.Tests.Unit;
-public class MessageOutboxTests
+public class MessageFolderTests
 {
     private readonly Mock<IMessageRepository<PhoneCall>> _mockOutboxMessageRepository = new();
 
@@ -45,7 +45,7 @@ public class MessageOutboxTests
     }
     
     [Fact]
-    public async Task GivenANewInstance_WhenOutboxMessagesAreRetrieved_ThenTheItemsAreRetrievedFromTheRepositoryAndMessagesAreLocked()
+    public async Task GivenANewInstance_WhenIGetMessages_ThenTheItemsAreRetrievedFromTheRepositoryAndMessagesAreNotLocked()
     {
         var expectedOutboxMessages = BuildOutboxMessages();
         _mockOutboxMessageRepository.Setup(m => m.GetAsync()).Returns(Task.FromResult(expectedOutboxMessages));
@@ -53,6 +53,33 @@ public class MessageOutboxTests
         var outboxMessages = await sut.GetAsync();
 
         Assert.Equal(expectedOutboxMessages, outboxMessages);
+        Assert.Equal(expectedOutboxMessages.First().LockExpiry, outboxMessages.First().LockExpiry);
+        Assert.Equal(expectedOutboxMessages.Last().LockExpiry, outboxMessages.Last().LockExpiry);
+        Assert.True(outboxMessages.All(m => !IsDateTimeNow(m.LockExpiry, addMilliseconds: 30000)));
+        _mockOutboxMessageRepository.Verify(m => m.UpdateAsync(outboxMessages), Times.Never());
+    }
+    
+    [Fact]
+    public async Task GivenANewInstance_WhenIGetAndLockMessages_ThenTheItemsAreRetrievedFromTheRepositoryAndMessagesAreLocked()
+    {
+        var expectedOutboxMessages = BuildOutboxMessages();
+        _mockOutboxMessageRepository.Setup(m => m.GetAndLockAsync(It.IsAny<int>())).Returns(Task.FromResult(expectedOutboxMessages));
+        var sut = new MessageFolder<PhoneCall>(_mockOutboxMessageRepository.Object);
+        var outboxMessages = await sut.GetAndLockAsync(It.IsAny<int>());
+
+        Assert.Equal(expectedOutboxMessages, outboxMessages);
+    }
+    
+    [Theory]
+    [InlineData(1)]
+    [InlineData(5)]
+    public async Task GivenANewInstance_WhenIGetAndLockXMessages_ThenXItemsAreRetrievedFromTheRepository(
+        int count)
+    {
+        var sut = new MessageFolder<PhoneCall>(_mockOutboxMessageRepository.Object);
+        await sut.GetAndLockAsync(count);
+
+        _mockOutboxMessageRepository.Verify(m => m.GetAndLockAsync(count), Times.Once);
     }
 
     [Fact]

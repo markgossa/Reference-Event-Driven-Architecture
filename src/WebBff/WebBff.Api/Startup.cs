@@ -12,8 +12,8 @@ using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.IO;
 using System.Reflection;
-using Common.CorrelationIdGenerator.ApplicationBuilderExtensions;
-using Common.CorrelationIdGenerator.ServiceCollectionExtensions;
+using AspNet.CorrelationIdGenerator.ServiceCollectionExtensions;
+using AspNet.CorrelationIdGenerator.ApplicationBuilderExtensions;
 
 namespace WebBff.Api;
 
@@ -29,8 +29,8 @@ public class Startup
             .AddMediatorServices()
             .AddApplicationInsightsTelemetry()
             .AddServices(Configuration)
-            .AddCorrelationIdGenerator(Configuration)
-            //.AddHostedServices()
+            .AddBus(Configuration)
+            .AddCorrelationIdGenerator()
             .AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerGenOptions>()
             .AddControllers();
 

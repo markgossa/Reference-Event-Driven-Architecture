@@ -6,17 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNet.CorrelationIdGenerator" Version="1.0.0" />
+    <PackageReference Include="MassTransit" Version="8.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\Contracts.Messages\Contracts.Messages.csproj" />
     <ProjectReference Include="..\WebBff.Application\WebBff.Application.csproj" />
     <ProjectReference Include="..\WebBff.Domain\WebBff.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Models\" />
   </ItemGroup>
 
 </Project>

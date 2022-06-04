@@ -1,6 +1,6 @@
-﻿using BookingGenerator.Application.Repositories;
+﻿using AspNet.CorrelationIdGenerator;
+using BookingGenerator.Application.Repositories;
 using BookingGenerator.Domain.Models;
-using Common.CorrelationIdGenerator;
 using Common.Messaging.Folder;
 using Common.Messaging.Folder.Models;
 using Microsoft.Extensions.Logging;
@@ -25,7 +25,7 @@ public class BookingServiceWithOutbox : IBookingService
 
     public async Task BookAsync(Booking booking, string? correlationId = null)
     {
-        correlationId = _correlationIdGenerator.CorrelationId;
+        correlationId = _correlationIdGenerator.Get();
         var outboxMessage = BuildOutboxMessage(booking);
         await _messageOutbox.AddAsync(outboxMessage);
         
@@ -49,5 +49,5 @@ public class BookingServiceWithOutbox : IBookingService
             correlationId);
 
     private Message<Booking> BuildOutboxMessage(Booking booking)
-        => new(_correlationIdGenerator.CorrelationId, booking);
+        => new(_correlationIdGenerator.Get(), booking);
 }

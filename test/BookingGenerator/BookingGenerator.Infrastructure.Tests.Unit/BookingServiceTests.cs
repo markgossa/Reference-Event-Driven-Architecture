@@ -1,6 +1,6 @@
+using AspNet.CorrelationIdGenerator;
 using BookingGenerator.Domain.Models;
 using BookingGenerator.Infrastructure.HttpClients;
-using Common.CorrelationIdGenerator;
 using Moq;
 using System.Net.Http;
 using Xunit;
@@ -69,7 +69,7 @@ public class BookingServiceTests
     private static ICorrelationIdGenerator SetUpMockCorrelationIdGenerator(string correlationId)
     {
         var mockCorrelationIdGenerator = new Mock<ICorrelationIdGenerator>();
-        mockCorrelationIdGenerator.Setup(m => m.CorrelationId).Returns(correlationId);
+        mockCorrelationIdGenerator.Setup(m => m.Get()).Returns(correlationId);
 
         return mockCorrelationIdGenerator.Object;
     }

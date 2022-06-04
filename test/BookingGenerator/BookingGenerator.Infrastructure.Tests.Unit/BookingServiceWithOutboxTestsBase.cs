@@ -1,6 +1,6 @@
-﻿using BookingGenerator.Application.Repositories;
+﻿using AspNet.CorrelationIdGenerator;
+using BookingGenerator.Application.Repositories;
 using BookingGenerator.Domain.Models;
-using Common.CorrelationIdGenerator;
 using Common.Messaging.Folder;
 using Common.Messaging.Folder.Models;
 using Microsoft.Extensions.Logging;
@@ -23,7 +23,7 @@ public class BookingServiceWithOutboxTestsBase
     }
 
     protected static void AssertGetsOutboxMessages(Mock<IMessageOutbox<Booking>> mockMessageOutbox)
-        => mockMessageOutbox.Verify(m => m.GetAsync(), Times.Once);
+        => mockMessageOutbox.Verify(m => m.GetAndLockAsync(It.IsAny<int>()), Times.Once);
 
     protected static void AssertMessageAddedToOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox,
         Booking booking, string correlationId)
@@ -32,16 +32,34 @@ public class BookingServiceWithOutboxTestsBase
 
     protected static void AssertFailedMessagesSetAsFailedInOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox,
         IEnumerable<Message<Booking>> expectedFailedMessages)
-            => mockMessageOutbox.Verify(m => m.FailAsync(It.Is<IEnumerable<Message<Booking>>>(failedBookings =>
-                FailedMessageCorrelationIdsMatchBookings(failedBookings, expectedFailedMessages))), Times.Once);
+    {
+        foreach (var failedMessage in expectedFailedMessages)
+        {
+            mockMessageOutbox.Verify(m=>m.FailAsync(It.Is<IEnumerable<Message<Booking>>>(b => b.Any(b 
+                => b.CorrelationId == failedMessage.CorrelationId))), Times.Once);
+        }
+    }
 
     protected static void AssertFailedMessagesNotRemovedFromOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox, IEnumerable
         <Message<Booking>> failedMessages)
-            => mockMessageOutbox.Verify(m => m.RemoveAsync(failedMessages.Select(m => m.CorrelationId)), Times.Never);
+    {
+        var failedCorrelationIds = failedMessages.Select(m => m.CorrelationId);
+        mockMessageOutbox.Verify(m => m.RemoveAsync(failedCorrelationIds), Times.Never);
+
+        foreach (var correlationId in failedCorrelationIds)
+        {
+            mockMessageOutbox.Verify(m => m.RemoveAsync(new List<string> { correlationId }), Times.Never);
+        }
+    }
 
     protected static void AssertSuccessfulMessagesRemovedFromOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox,
         IEnumerable<string> correlationIds)
-            => mockMessageOutbox.Verify(m => m.RemoveAsync(correlationIds), Times.Once);
+    {
+        foreach (var correlationId in correlationIds)
+        {
+            mockMessageOutbox.Verify(m => m.RemoveAsync(new List<string> { correlationId }), Times.Once);
+        };
+    }
 
     protected static Booking BuildNewBooking(string firstName, string lastName, string startDate,
         string endDate, string destination, decimal price)
@@ -63,28 +81,6 @@ public class BookingServiceWithOutboxTestsBase
                     BuildNewBooking(_failedBooking, "Smith", "11/07/2022", "24/07/2022", "Corfu", 305m))
             }.AsEnumerable();
 
-    protected static bool FailedMessageCorrelationIdsMatchBookings(IEnumerable<Message<Booking>> failedBookings,
-        IEnumerable<Message<Booking>> expectedFailedMessages)
-    {
-        var failedCorrelationIds = failedBookings.Select(f => f.CorrelationId).ToList();
-        var expectedFailedCorrelationIds = expectedFailedMessages.Select(f => f.CorrelationId).ToList();
-
-        if (failedCorrelationIds.Count != expectedFailedCorrelationIds.Count)
-        {
-            return false;
-        }
-
-        for (var i = 0; i < failedCorrelationIds.Count; i++)
-        {
-            if (failedCorrelationIds[i] != expectedFailedCorrelationIds[i])
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
     protected static IEnumerable<Message<Booking>> GetFailedOutboxMessages(IEnumerable<Message<Booking>> outboxMessages)
         => outboxMessages.Where(m => m.MessageObject.FirstName == _failedBooking);
 
@@ -94,7 +90,7 @@ public class BookingServiceWithOutboxTestsBase
     protected static Mock<ICorrelationIdGenerator> SetUpMockCorrelationIdGenerator(string correlationId)
     {
         var mockCorrelationIdGenerator = new Mock<ICorrelationIdGenerator>();
-        mockCorrelationIdGenerator.Setup(m => m.CorrelationId).Returns(correlationId);
+        mockCorrelationIdGenerator.Setup(m => m.Get()).Returns(correlationId);
 
         return mockCorrelationIdGenerator;
     }

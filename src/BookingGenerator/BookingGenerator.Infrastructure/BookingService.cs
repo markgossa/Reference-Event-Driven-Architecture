@@ -1,7 +1,7 @@
-﻿using BookingGenerator.Application.Repositories;
+﻿using AspNet.CorrelationIdGenerator;
+using BookingGenerator.Application.Repositories;
 using BookingGenerator.Domain.Models;
 using BookingGenerator.Infrastructure.HttpClients;
-using Common.CorrelationIdGenerator;
 
 namespace BookingGenerator.Infrastructure;
 
@@ -20,6 +20,6 @@ public class BookingService : IBookingService
         => await _httpClient.PostAsync(booking, GetCorrelationId(correlationId));
 
     private string GetCorrelationId(string? correlationId) => string.IsNullOrWhiteSpace(correlationId)
-                ? _correlationIdGenerator.CorrelationId
+                ? _correlationIdGenerator.Get()
                 : correlationId;
 }

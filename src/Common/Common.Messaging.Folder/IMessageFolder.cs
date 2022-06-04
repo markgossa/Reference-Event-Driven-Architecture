@@ -7,4 +7,5 @@ public interface IMessageFolder<T>
     Task RemoveAsync(IEnumerable<string> correlationIds);
     Task FailAsync(IEnumerable<Message<T>> messages);
     Task<IEnumerable<Message<T>>> GetAsync();
+    Task<IEnumerable<Message<T>>> GetAndLockAsync(int count);
 }

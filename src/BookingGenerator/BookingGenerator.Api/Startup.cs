@@ -1,8 +1,8 @@
-﻿using BookingGenerator.Api.ApplicationBuilderExtensions;
+﻿using AspNet.CorrelationIdGenerator.ApplicationBuilderExtensions;
+using AspNet.CorrelationIdGenerator.ServiceCollectionExtensions;
+using BookingGenerator.Api.ApplicationBuilderExtensions;
 using BookingGenerator.Api.ServiceCollectionExtensions;
 using BookingGenerator.Api.Swagger;
-using Common.CorrelationIdGenerator.ApplicationBuilderExtensions;
-using Common.CorrelationIdGenerator.ServiceCollectionExtensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
@@ -29,7 +29,7 @@ public class Startup
             .AddMediatorServices()
             .AddApplicationInsightsTelemetry()
             .AddServices(Configuration)
-            .AddCorrelationIdGenerator(Configuration)
+            .AddCorrelationIdGenerator()
             .AddHostedServices()
             .AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerGenOptions>()
             .AddControllers();

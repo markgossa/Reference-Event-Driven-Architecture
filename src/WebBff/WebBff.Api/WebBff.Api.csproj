@@ -11,7 +11,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AspNet.CorrelationIdGenerator" Version="1.0.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.4.0" />
+    <PackageReference Include="MassTransit" Version="8.0.2" />
+    <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.0.2" />
     <PackageReference Include="MediatR" Version="10.0.1" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
@@ -30,7 +33,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Common\Common.CorrelationIdGenerator\Common.CorrelationIdGenerator.csproj" />
     <ProjectReference Include="..\..\Common\Common.Messaging.Repository.Sql\Common.Messaging.Repository.Sql.csproj" />
     <ProjectReference Include="..\WebBff.Application\WebBff.Application.csproj" />
     <ProjectReference Include="..\WebBff.Domain\WebBff.Domain.csproj" />
