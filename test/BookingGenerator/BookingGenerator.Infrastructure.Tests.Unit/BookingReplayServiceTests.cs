@@ -8,7 +8,7 @@ namespace BookingGenerator.Infrastructure.Tests.Unit;
 public class BookingReplayServiceTests : BookingServiceWithOutboxTestsBase
 {
     [Fact]
-    public async Task GivenNewInstance_WhenICallReplayBookAndSomeAreSuccessful_ThenTheMessagesAreRetrievedFromTheOutboxAndSentToTheBookingService_AndSuccessfulOnesRemoved()
+    public async Task GivenNewInstance_WhenICallReplayBookAndSomeAreSuccessful_ThenTheMessagesAreRetrievedFromTheOutboxAndSentToTheBookingService_AndSuccessfulOnesCompleted()
     {
         var mockMessageOutbox = new Mock<IMessageOutbox<Booking>>();
         var outboxMessages = BuildOutboxMessages();
