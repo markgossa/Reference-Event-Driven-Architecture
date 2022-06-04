@@ -95,9 +95,6 @@ public class BookingServiceWithOutboxTestsBase
         return mockCorrelationIdGenerator;
     }
 
-    protected void AssertBookingAttempted(Booking booking)
-        => _mockBookingService.Verify(m => m.BookAsync(booking, It.IsAny<string>()), Times.Once());
-
     protected void AssertBookingNotAttempted(Booking booking)
         => _mockBookingService.Verify(m => m.BookAsync(booking, It.IsAny<string>()), Times.Never);
 
@@ -113,8 +110,7 @@ public class BookingServiceWithOutboxTestsBase
     }
 
     protected async Task MakeNewBookingAsync(Booking booking, Mock<ICorrelationIdGenerator> mockCorrelationIdGenerator)
-        => await new BookingServiceWithOutbox(_mockBookingService.Object, mockCorrelationIdGenerator.Object,
-            _mockMessageOutbox.Object, new Mock<ILogger<BookingServiceWithOutbox>>().Object)
+        => await new BookingServiceWithOutbox(mockCorrelationIdGenerator.Object, _mockMessageOutbox.Object)
                 .BookAsync(booking);
 
     protected void SetUpMockBookingService()
@@ -125,4 +121,9 @@ public class BookingServiceWithOutboxTestsBase
         => _mockMessageOutbox
             .Setup(m => m.AddAsync(It.Is<Message<Booking>>(b => b.MessageObject.FirstName == _failedOutboxAdd)))
             .ThrowsAsync(new Exception());
+
+    protected void AssertMessageNotSetToFailedInOutbox(string correlationId) 
+        => _mockMessageOutbox.Verify(m => m.FailAsync(
+            It.Is<IEnumerable<Message<Booking>>>(s => !s.Any(t => t.CorrelationId == correlationId))),
+                Times.Never);
 }

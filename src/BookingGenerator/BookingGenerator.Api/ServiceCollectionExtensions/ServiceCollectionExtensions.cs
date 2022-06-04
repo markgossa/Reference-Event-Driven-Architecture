@@ -48,8 +48,7 @@ public static class ServiceCollectionExtensions
         => services.AddHostedService<BookingReplayHostedService>();
 
     private static BookingServiceWithOutbox BuildBookingServiceWithOutbox(IServiceProvider sp) 
-        => new(BuildBookingService(sp), sp.GetRequiredService<ICorrelationIdGenerator>(),
-            sp.GetRequiredService<IMessageOutbox<Booking>>(), sp.GetRequiredService<ILogger<BookingServiceWithOutbox>>());
+        => new(sp.GetRequiredService<ICorrelationIdGenerator>(), sp.GetRequiredService<IMessageOutbox<Booking>>());
 
     private static IBookingService BuildBookingService(IServiceProvider sp) 
         => new BookingService(sp.GetRequiredService<IWebBffHttpClient>(), sp.GetRequiredService<ICorrelationIdGenerator>());

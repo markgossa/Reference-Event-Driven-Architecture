@@ -30,7 +30,7 @@ public class MessageOutboxTests
         Assert.Equal(outboxMessage.MessageObject.Destination, actualOutboxMessage?.MessageObject.Destination);
         Assert.Equal(0, actualOutboxMessage?.AttemptCount);
         Assert.Null(actualOutboxMessage?.LastAttempt);
-        Assert.True(IsDateTimeNow(actualOutboxMessage?.LockExpiry, addMilliseconds: 30000));
+        Assert.Null(actualOutboxMessage?.LockExpiry);
     }
     
     [Fact]

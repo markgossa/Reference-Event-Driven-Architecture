@@ -15,7 +15,6 @@ public class Message<T>
     {
         CorrelationId = correlationId;
         MessageObject = messageObject;
-        SetLock();
     }
 
     public void Lock() => SetLock();

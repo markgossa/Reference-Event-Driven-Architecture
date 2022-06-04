@@ -13,7 +13,7 @@ public class MessageFolderTests
     [Theory]
     [InlineData("0123456789", "9876543210")]
     [InlineData("9876543210", "0123456789")]
-    public async Task GivenANewInstance_WhenAnOutboxMessageIsAdded_ThenTheItemIsAddedToTheRepositoryAndMessagesAreLocked(
+    public async Task GivenANewInstance_WhenAnOutboxMessageIsAdded_ThenTheItemIsAddedToTheRepository(
         string source, string destination)
     {
         Message<PhoneCall>? actualOutboxMessage = null;
@@ -30,7 +30,7 @@ public class MessageFolderTests
         Assert.Equal(outboxMessage.MessageObject.Destination, actualOutboxMessage?.MessageObject.Destination);
         Assert.Equal(0, actualOutboxMessage?.AttemptCount);
         Assert.Null(actualOutboxMessage?.LastAttempt);
-        Assert.True(IsDateTimeNow(actualOutboxMessage?.LockExpiry, addMilliseconds: 30000));
+        Assert.Null(actualOutboxMessage?.LockExpiry);
     }
     
     [Fact]
