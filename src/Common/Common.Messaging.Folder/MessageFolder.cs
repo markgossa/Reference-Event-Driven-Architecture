@@ -16,7 +16,7 @@ public class MessageFolder<T> : IMessageOutbox<T>, IMessageInbox<T>
     
     public Task<IEnumerable<Message<T>>> GetAndLockAsync(int count) => _messageRepository.GetAndLockAsync(count);
 
-    public Task RemoveAsync(IEnumerable<string> correlationIds) => _messageRepository.RemoveAsync(correlationIds);
+    public Task CompleteAsync(IEnumerable<string> correlationIds) => _messageRepository.CompleteAsync(correlationIds);
 
     public Task FailAsync(IEnumerable<Message<T>> messages)
     {

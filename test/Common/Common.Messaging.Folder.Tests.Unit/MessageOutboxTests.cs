@@ -34,14 +34,14 @@ public class MessageOutboxTests
     }
     
     [Fact]
-    public async Task GivenANewInstance_WhenOutboxMessagesAreRemoved_ThenTheItemsAreRemovedFromTheRepository()
+    public async Task GivenANewInstance_WhenOutboxMessagesAreCompleted_ThenTheItemsAreCompletedInTheRepository()
     {
         var correlationIds = new List<string> { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
 
         var sut = new MessageFolder<PhoneCall>(_mockOutboxMessageRepository.Object);
-        await sut.RemoveAsync(correlationIds);
+        await sut.CompleteAsync(correlationIds);
 
-        _mockOutboxMessageRepository.Verify(m=>m.RemoveAsync(correlationIds), Times.Once());
+        _mockOutboxMessageRepository.Verify(m=>m.CompleteAsync(correlationIds), Times.Once());
     }
     
     [Fact]

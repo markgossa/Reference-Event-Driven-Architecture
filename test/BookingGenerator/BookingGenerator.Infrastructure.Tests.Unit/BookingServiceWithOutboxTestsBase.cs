@@ -40,24 +40,24 @@ public class BookingServiceWithOutboxTestsBase
         }
     }
 
-    protected static void AssertFailedMessagesNotRemovedFromOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox, IEnumerable
+    protected static void AssertFailedMessagesNotCompletedInOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox, IEnumerable
         <Message<Booking>> failedMessages)
     {
         var failedCorrelationIds = failedMessages.Select(m => m.CorrelationId);
-        mockMessageOutbox.Verify(m => m.RemoveAsync(failedCorrelationIds), Times.Never);
+        mockMessageOutbox.Verify(m => m.CompleteAsync(failedCorrelationIds), Times.Never);
 
         foreach (var correlationId in failedCorrelationIds)
         {
-            mockMessageOutbox.Verify(m => m.RemoveAsync(new List<string> { correlationId }), Times.Never);
+            mockMessageOutbox.Verify(m => m.CompleteAsync(new List<string> { correlationId }), Times.Never);
         }
     }
 
-    protected static void AssertSuccessfulMessagesRemovedFromOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox,
+    protected static void AssertSuccessfulMessagesCompletedInOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox,
         IEnumerable<string> correlationIds)
     {
         foreach (var correlationId in correlationIds)
         {
-            mockMessageOutbox.Verify(m => m.RemoveAsync(new List<string> { correlationId }), Times.Once);
+            mockMessageOutbox.Verify(m => m.CompleteAsync(new List<string> { correlationId }), Times.Once);
         };
     }
 
@@ -98,8 +98,8 @@ public class BookingServiceWithOutboxTestsBase
     protected void AssertBookingNotAttempted(Booking booking)
         => _mockBookingService.Verify(m => m.BookAsync(booking, It.IsAny<string>()), Times.Never);
 
-    protected void AssertNoMessagesRemovedFromOutbox()
-        => _mockMessageOutbox.Verify(m => m.RemoveAsync(It.IsAny<List<string>>()), Times.Never);
+    protected void AssertNoMessagesCompletedInOutbox()
+        => _mockMessageOutbox.Verify(m => m.CompleteAsync(It.IsAny<List<string>>()), Times.Never);
 
     protected void AssertOutboxMessagesAttempted(IEnumerable<Message<Booking>> messages)
     {

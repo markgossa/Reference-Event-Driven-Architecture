@@ -20,9 +20,9 @@ public class BookingReplayServiceTests : BookingServiceWithOutboxTestsBase
 
         AssertGetsOutboxMessages(mockMessageOutbox);
         AssertOutboxMessagesAttempted(outboxMessages);
-        AssertSuccessfulMessagesRemovedFromOutbox(mockMessageOutbox, GetSuccessfulOutboxMessageCorrelationIds(outboxMessages));
+        AssertSuccessfulMessagesCompletedInOutbox(mockMessageOutbox, GetSuccessfulOutboxMessageCorrelationIds(outboxMessages));
         var failedMessages = GetFailedOutboxMessages(outboxMessages);
-        AssertFailedMessagesNotRemovedFromOutbox(mockMessageOutbox, failedMessages);
+        AssertFailedMessagesNotCompletedInOutbox(mockMessageOutbox, failedMessages);
         AssertFailedMessagesSetAsFailedInOutbox(mockMessageOutbox, failedMessages);
     }
 }

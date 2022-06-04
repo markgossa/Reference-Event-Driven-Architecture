@@ -78,7 +78,7 @@ public class SqlMessageRepository<T> : IMessageRepository<T>, IDisposable
         return messages;
     }
 
-    public async Task RemoveAsync(IEnumerable<string> correlationIds)
+    public async Task CompleteAsync(IEnumerable<string> correlationIds)
     {
         foreach (var correlationId in correlationIds)
         {

@@ -87,13 +87,13 @@ public class SqlMessageRepositoryTests
     }
 
     [Fact]
-    public async Task GivenNewInstance_WhenAMessageIsRemoved_ThenTheMessageIsRemovedFromSql()
+    public async Task GivenNewInstance_WhenAMessageIsCompleted_ThenTheMessageIsCompletedInOutbox()
     {
         var message = BuildMessageSqlRow();
         await AddMessageToDatabaseAsync(message);
 
         var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
-        await sut.RemoveAsync(new List<string> { message.CorrelationId });
+        await sut.CompleteAsync(new List<string> { message.CorrelationId });
 
         Assert.Empty(_messageDbContext.Messages);
     }

@@ -19,7 +19,7 @@ public class BookingServiceWithOutboxTests : BookingServiceWithOutboxTestsBase
         AssertMessageAddedToOutbox(_mockMessageOutbox, booking, correlationId);
         AssertBookingNotAttempted(booking);
         AssertMessageNotSetToFailedInOutbox(correlationId);
-        AssertFailedMessagesNotRemovedFromOutbox(_mockMessageOutbox, 
+        AssertFailedMessagesNotCompletedInOutbox(_mockMessageOutbox, 
             new List<Message<Booking>> { new Message<Booking>(correlationId, booking) });
     }
 
