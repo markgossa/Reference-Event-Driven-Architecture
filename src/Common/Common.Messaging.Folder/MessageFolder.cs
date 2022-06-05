@@ -12,8 +12,6 @@ public class MessageFolder<T> : IMessageOutbox<T>, IMessageInbox<T>
     public Task AddAsync(Message<T> message)
         => _messageRepository.AddAsync(message);
 
-    public Task<IEnumerable<Message<T>>> GetAsync() => _messageRepository.GetAsync();
-    
     public Task<IEnumerable<Message<T>>> GetAndLockAsync(int count) => _messageRepository.GetAndLockAsync(count);
 
     public Task CompleteAsync(IEnumerable<Message<T>> messages) => _messageRepository.UpdateAsync(messages);

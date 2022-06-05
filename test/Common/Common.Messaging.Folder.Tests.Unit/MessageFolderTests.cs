@@ -45,21 +45,6 @@ public class MessageFolderTests
     }
 
     [Fact]
-    public async Task GivenANewInstance_WhenIGetMessages_ThenTheItemsAreRetrievedFromTheRepositoryAndMessagesAreNotLocked()
-    {
-        var expectedOutboxMessages = BuildOutboxMessages();
-        _mockOutboxMessageRepository.Setup(m => m.GetAsync()).Returns(Task.FromResult(expectedOutboxMessages));
-        var sut = new MessageFolder<PhoneCall>(_mockOutboxMessageRepository.Object);
-        var outboxMessages = await sut.GetAsync();
-
-        Assert.Equal(expectedOutboxMessages, outboxMessages);
-        Assert.Equal(expectedOutboxMessages.First().LockExpiry, outboxMessages.First().LockExpiry);
-        Assert.Equal(expectedOutboxMessages.Last().LockExpiry, outboxMessages.Last().LockExpiry);
-        Assert.True(outboxMessages.All(m => !IsDateTimeNow(m.LockExpiry, addMilliseconds: 30000)));
-        _mockOutboxMessageRepository.Verify(m => m.UpdateAsync(outboxMessages), Times.Never());
-    }
-
-    [Fact]
     public async Task GivenANewInstance_WhenIGetAndLockMessages_ThenTheItemsAreRetrievedFromTheRepositoryAndMessagesAreLocked()
     {
         var expectedOutboxMessages = BuildOutboxMessages();

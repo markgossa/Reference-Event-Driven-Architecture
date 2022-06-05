@@ -45,17 +45,6 @@ public class MessageOutboxTests
     }
 
     [Fact]
-    public async Task GivenANewInstance_WhenOutboxMessagesAreRetrieved_ThenTheItemsAreRetrievedFromTheRepositoryAndMessagesAreLocked()
-    {
-        var expectedOutboxMessages = BuildOutboxMessages();
-        _mockOutboxMessageRepository.Setup(m => m.GetAsync()).Returns(Task.FromResult(expectedOutboxMessages));
-        var sut = new MessageFolder<PhoneCall>(_mockOutboxMessageRepository.Object);
-        var outboxMessages = await sut.GetAsync();
-
-        Assert.Equal(expectedOutboxMessages, outboxMessages);
-    }
-
-    [Fact]
     public async Task GivenANewInstance_WhenOutboxMessagesAreFailed_ThenTheItemsAreFailedInTheRepositoryAndAttemptCountAndLastUpdateTimeUpdated()
     {
         var failedMessages = BuildOutboxMessages();

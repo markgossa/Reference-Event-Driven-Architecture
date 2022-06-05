@@ -41,20 +41,6 @@ public class SqlMessageRepository<T> : IMessageRepository<T>, IDisposable
         }
     }
 
-    public async Task<IEnumerable<Message<T>>> GetAsync()
-    {
-        try
-        {
-            return await GetMessagesAsync(1000);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed getting messages from SQL");
-        }
-
-        return new List<Message<T>>();
-    }
-
     public async Task<IEnumerable<Message<T>>> GetAndLockAsync(int count)
     {
         using var transaction = await _outboxMessageDbContext.Database.BeginTransactionAsync();

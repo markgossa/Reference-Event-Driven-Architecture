@@ -184,61 +184,6 @@ public class SqlMessageRepositoryTests
         AssertPropertiesReturned(outboxMessageRow2, messages.LastOrDefault(), isMessageLocked: true);
     }
 
-    [Fact]
-    public async Task GivenNewInstance_WhenIGetMessages_ThenMessagesWithANullLockExpiryAreReturnedWithAllProperties()
-    {
-        var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
-        var outboxMessageRow = BuildMessageSqlRow();
-        await AddMessageToDatabaseAsync(outboxMessageRow);
-        var messages = await sut.GetAsync();
-
-        Assert.Single(messages);
-        AssertPropertiesReturned(outboxMessageRow, messages.Single());
-    }
-
-    [Theory]
-    [InlineData(1, 0)]
-    [InlineData(-1, 1)]
-    public async Task GivenNewInstance_WhenIGetMessages_ThenMessagesWithAnExpiredLockAreReturnedWithAllProperties(
-        int secondsTillLockExpires, int expectedMessageCount)
-    {
-        var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
-        var outboxMessageRow = BuildMessageSqlRow(DateTime.UtcNow.AddSeconds(secondsTillLockExpires));
-        await AddMessageToDatabaseAsync(outboxMessageRow);
-        var messages = await sut.GetAsync();
-
-        Assert.Equal(expectedMessageCount, messages.Count());
-        AssertPropertiesReturned(outboxMessageRow, messages.FirstOrDefault());
-    }
-
-    [Theory]
-    [InlineData(1, 0)]
-    [InlineData(-1, 1)]
-    public async Task GivenNewInstance_WhenIGetMessages_ThenMessagesWithARetryAfterTimeAfterUtcNowAreReturnedWithAllProperties(
-        int secondsTillRetryAfterElapses, int expectedMessageCount)
-    {
-        var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
-        var outboxMessageRow = BuildMessageSqlRow(null,
-                    DateTime.UtcNow.AddSeconds(secondsTillRetryAfterElapses));
-        await AddMessageToDatabaseAsync(outboxMessageRow);
-        var messages = await sut.GetAsync();
-
-        Assert.Equal(expectedMessageCount, messages.Count());
-        AssertPropertiesReturned(outboxMessageRow, messages.FirstOrDefault());
-    }
-
-    [Fact]
-    public async Task GivenNewInstance_WhenIGetMessages_ThenMessagesWithANullRetryAfterTimeAreReturnedWithAllProperties()
-    {
-        var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
-        var outboxMessageRow = BuildMessageSqlRow();
-        await AddMessageToDatabaseAsync(outboxMessageRow);
-        var messages = await sut.GetAsync();
-
-        Assert.Single(messages);
-        AssertPropertiesReturned(outboxMessageRow, messages.FirstOrDefault());
-    }
-
     private static DateTime? ParseDate(string date)
         => !string.IsNullOrWhiteSpace(date) ? DateTime.Parse(date) : null;
 
