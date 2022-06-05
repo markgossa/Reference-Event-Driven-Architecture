@@ -78,16 +78,17 @@ public class SqlMessageRepository<T> : IMessageRepository<T>, IDisposable
         return messages;
     }
 
-    public async Task CompleteAsync(IEnumerable<string> correlationIds)
-    {
-        foreach (var correlationId in correlationIds)
-        {
-            _outboxMessageDbContext.RemoveRange(
-                _outboxMessageDbContext.Messages.Where(m => m.CorrelationId == correlationId));
-        }
+    //TODO: Add tests and write this method out
+    //public async Task RemoveAsync(IEnumerable<string> correlationIds)
+    //{
+    //    foreach (var correlationId in correlationIds)
+    //    {
+    //        _outboxMessageDbContext.RemoveRange(
+    //            _outboxMessageDbContext.Messages.Where(m => m.CorrelationId == correlationId));
+    //    }
 
-        await _outboxMessageDbContext.SaveChangesAsync();
-    }
+    //    await _outboxMessageDbContext.SaveChangesAsync();
+    //}
 
     private async Task<IEnumerable<Message<T>>> GetMessagesAsync(int count)
         => await _outboxMessageDbContext.Messages

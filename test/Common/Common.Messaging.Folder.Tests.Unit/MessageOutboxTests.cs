@@ -1,11 +1,11 @@
 using Common.Messaging.Folder;
 using Common.Messaging.Folder.Models;
 using Common.Messaging.Folder.Repositories;
-using Common.Messaging.Outbox.Tests.Unit.Models;
+using Common.Messaging.Folder.Tests.Unit.Models;
 using Moq;
 using Xunit;
 
-namespace Common.Messaging.Outbox.Tests.Unit;
+namespace Common.Messaging.Folder.Tests.Unit;
 public class MessageOutboxTests
 {
     private readonly Mock<IMessageRepository<PhoneCall>> _mockOutboxMessageRepository = new();
@@ -32,18 +32,18 @@ public class MessageOutboxTests
         Assert.Null(actualOutboxMessage?.LastAttempt);
         Assert.Null(actualOutboxMessage?.LockExpiry);
     }
-    
+
     [Fact]
-    public async Task GivenANewInstance_WhenOutboxMessagesAreCompleted_ThenTheItemsAreCompletedInTheRepository()
+    public async Task GivenANewInstance_WhenOutboxMessagesAreCompleted_ThenTheItemsAreUpdatedInTheRepository()
     {
-        var correlationIds = new List<string> { Guid.NewGuid().ToString(), Guid.NewGuid().ToString() };
+        var messages = BuildOutboxMessages();
 
         var sut = new MessageFolder<PhoneCall>(_mockOutboxMessageRepository.Object);
-        await sut.CompleteAsync(correlationIds);
+        await sut.CompleteAsync(messages);
 
-        _mockOutboxMessageRepository.Verify(m=>m.CompleteAsync(correlationIds), Times.Once());
+        _mockOutboxMessageRepository.Verify(m => m.UpdateAsync(messages), Times.Once());
     }
-    
+
     [Fact]
     public async Task GivenANewInstance_WhenOutboxMessagesAreRetrieved_ThenTheItemsAreRetrievedFromTheRepositoryAndMessagesAreLocked()
     {
@@ -73,7 +73,7 @@ public class MessageOutboxTests
         Assert.True(failedMessages.All(m => IsDateTimeNow(m.LastAttempt)));
         Assert.True(failedMessages.All(m => m.LockExpiry is null));
     }
-    
+
     [Theory]
     [InlineData(0, 1000)]
     [InlineData(1, 2000)]
@@ -105,7 +105,7 @@ public class MessageOutboxTests
 
     private static IEnumerable<Message<PhoneCall>> BuildOutboxMessages()
         => new List<Message<PhoneCall>>()
-        { 
+        {
                 new (Guid.NewGuid().ToString(), new PhoneCall("0123456789", "9876543210"))
                 {
                     LockExpiry = null,

@@ -1,15 +1,15 @@
 ﻿using Common.Messaging.Folder.Models;
-using Common.Messaging.Repository.Sql.Models;
 using Common.Messaging.Outbox.Sql.Tests.Unit.Models;
+using Common.Messaging.Repository.Sql;
+using Common.Messaging.Repository.Sql.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Moq;
 using System.Data.Common;
 using System.Text.Json;
 using Xunit;
-using Common.Messaging.Repository.Sql;
-using Microsoft.Extensions.Logging;
-using Moq;
 
 namespace Common.Messaging.Outbox.Sql.Tests.Unit;
 public class SqlMessageRepositoryTests
@@ -18,6 +18,7 @@ public class SqlMessageRepositoryTests
     private readonly MessageDbContext _messageDbContext;
     private const int _lockExpirySeconds = 30;
     private readonly Mock<ILogger<SqlMessageRepository<Tree>>> _logger = new();
+    private readonly Tree _tree = new("Sycamore", 5);
 
     public SqlMessageRepositoryTests()
     {
@@ -68,7 +69,7 @@ public class SqlMessageRepositoryTests
 
         AssertMessagePropertiesSavedToDatabase(messageToUpdate);
     }
-    
+
     [Fact]
     public async Task GivenNewInstance_WhenAMessageIsUpdatedAndIsThenRemovedFromSql_ThenDoesNotThrow()
     {
@@ -87,25 +88,13 @@ public class SqlMessageRepositoryTests
     }
 
     [Fact]
-    public async Task GivenNewInstance_WhenAMessageIsCompleted_ThenTheMessageIsCompletedInOutbox()
-    {
-        var message = BuildMessageSqlRow();
-        await AddMessageToDatabaseAsync(message);
-
-        var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
-        await sut.CompleteAsync(new List<string> { message.CorrelationId });
-
-        Assert.Empty(_messageDbContext.Messages);
-    }
-
-    [Fact]
     public async Task GivenNewInstance_WhenIGetAndLockMessages_ThenMessagesWithANullLockExpiryAreReturnedWithAllPropertiesAndMessagesAreLocked()
     {
         var outboxMessageRow1 = BuildMessageSqlRow();
         var outboxMessageRow2 = BuildMessageSqlRow(lockExpiry: DateTime.UtcNow.AddMinutes(2));
         await AddMessageToDatabaseAsync(outboxMessageRow1);
         await AddMessageToDatabaseAsync(outboxMessageRow2);
-     
+
         var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
         var messages = await sut.GetAndLockAsync(10);
 
@@ -121,7 +110,7 @@ public class SqlMessageRepositoryTests
         var outboxMessageRow2 = BuildMessageSqlRow(DateTime.UtcNow.AddSeconds(1));
         await AddMessageToDatabaseAsync(outboxMessageRow1);
         await AddMessageToDatabaseAsync(outboxMessageRow2);
-     
+
         var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
         var messages = await sut.GetAndLockAsync(10);
 
@@ -137,7 +126,7 @@ public class SqlMessageRepositoryTests
         var outboxMessageRow2 = BuildMessageSqlRow(null, DateTime.UtcNow.AddSeconds(1));
         await AddMessageToDatabaseAsync(outboxMessageRow1);
         await AddMessageToDatabaseAsync(outboxMessageRow2);
-        
+
         var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
         var messages = await sut.GetAndLockAsync(10);
 
@@ -151,7 +140,7 @@ public class SqlMessageRepositoryTests
     {
         var outboxMessageRow = BuildMessageSqlRow();
         await AddMessageToDatabaseAsync(outboxMessageRow);
-        
+
         var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
         var messages = await sut.GetAndLockAsync(10);
 
@@ -174,9 +163,9 @@ public class SqlMessageRepositoryTests
         var messages = await sut.GetAndLockAsync(1);
 
         Assert.Single(messages);
-        AssertPropertiesReturned(outboxMessageRow3, messages.FirstOrDefault(), isMessageLocked: true);  
+        AssertPropertiesReturned(outboxMessageRow3, messages.FirstOrDefault(), isMessageLocked: true);
     }
-    
+
     [Fact]
     public async Task GivenNewInstance_WhenIGetAndLock2Messages_ThenTheMessagesWithOldestRetryAfterTimeAreReturned()
     {
@@ -191,8 +180,8 @@ public class SqlMessageRepositoryTests
         var messages = await sut.GetAndLockAsync(2);
 
         Assert.Equal(2, messages.Count());
-        AssertPropertiesReturned(outboxMessageRow3, messages.FirstOrDefault(), isMessageLocked: true);  
-        AssertPropertiesReturned(outboxMessageRow2, messages.LastOrDefault(), isMessageLocked: true);  
+        AssertPropertiesReturned(outboxMessageRow3, messages.FirstOrDefault(), isMessageLocked: true);
+        AssertPropertiesReturned(outboxMessageRow2, messages.LastOrDefault(), isMessageLocked: true);
     }
 
     [Fact]
@@ -293,14 +282,14 @@ public class SqlMessageRepositoryTests
         await _messageDbContext.SaveChangesAsync();
     }
 
-    private static MessageSqlRow BuildMessageSqlRow(DateTime? lockExpiry = null,
+    private MessageSqlRow BuildMessageSqlRow(DateTime? lockExpiry = null,
         DateTime? retryAfter = null)
         => new()
         {
-            AttemptCount = new Random().Next(0,100),
+            AttemptCount = new Random().Next(0, 100),
             CorrelationId = Guid.NewGuid().ToString(),
             LastAttempt = DateTime.UtcNow.AddDays(-1),
-            MessageBlob = JsonSerializer.Serialize(new Tree("Sycamore", 5)),
+            MessageBlob = JsonSerializer.Serialize(_tree),
             LockExpiry = lockExpiry,
             RetryAfter = retryAfter
         };
@@ -339,7 +328,7 @@ public class SqlMessageRepositoryTests
         Assert.Equal(outboxMessageRow.LastAttempt, outboxMessage?.LastAttempt);
     }
 
-    private static void AssertLockExpiryTime(DateTime? actualLockExpiry, DateTime expectedLockExpiry) 
+    private static void AssertLockExpiryTime(DateTime? actualLockExpiry, DateTime expectedLockExpiry)
         => Assert.InRange(actualLockExpiry ?? DateTime.MinValue, expectedLockExpiry.AddMilliseconds(-100),
             expectedLockExpiry.AddMilliseconds(100));
 

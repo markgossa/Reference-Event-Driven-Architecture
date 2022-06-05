@@ -42,7 +42,7 @@ public class BookingReplayService : IBookingReplayService
     private async Task ReplayMessageAsync(Message<Booking> message)
     {
         await _bookingService.BookAsync(message.MessageObject, message.CorrelationId);
-        await _messageOutbox.CompleteAsync(new List<string> { message.CorrelationId });
+        await _messageOutbox.CompleteAsync(new List<Message<Booking>> { message });
     }
     
     private async Task SetMessageAsFailedAsync(Message<Booking> message, Exception ex)
