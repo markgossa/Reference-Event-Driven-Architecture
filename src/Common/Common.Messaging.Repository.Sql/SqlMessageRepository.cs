@@ -23,6 +23,11 @@ public class SqlMessageRepository<T> : IMessageRepository<T>, IDisposable
         {
             await AddMessageAsync(message);
         }
+        catch (DbUpdateException ex) when (!string.IsNullOrWhiteSpace(ex.InnerException?.Message) 
+            && ex.InnerException.Message.Contains("UNIQUE constraint failed"))
+        {
+            throw new DuplicateMessageException("Duplicate message received", ex);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error adding message to SQL");

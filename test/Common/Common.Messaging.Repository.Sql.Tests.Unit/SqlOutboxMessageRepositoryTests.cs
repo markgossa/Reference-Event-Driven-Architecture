@@ -46,6 +46,27 @@ public class SqlMessageRepositoryTests
 
         AssertMessagePropertiesSavedToDatabase(messageToAdd);
     }
+    
+    [Fact]
+    public async Task GivenNewInstance_WhenAMessageWithADuplicateCorrelationIdIsAdded_ThenMessageIsNotSavedInSqlAndADuplicateMessageExceptionIsThrown()
+    {
+
+        var duplicateCorrelationId = Guid.NewGuid().ToString();
+        var existingMessageRow = BuildMessageSqlRow(null, null, null, duplicateCorrelationId);
+        await AddMessageToDatabaseAsync(existingMessageRow);
+        var messageToAdd = new Message<Tree>(duplicateCorrelationId, new Tree("Sycamore", 5))
+        {
+            AttemptCount = 1,
+            LastAttempt = DateTime.UtcNow.AddDays(-1),
+            LockExpiry = DateTime.UtcNow.AddDays(-1)
+        };
+
+        var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
+        await Assert.ThrowsAsync<DuplicateMessageException>(async () => await sut.AddAsync(messageToAdd));
+
+        AssertMessagePropertiesSavedToDatabase(MapToMessage(existingMessageRow));
+        Assert.Single(_messageDbContext.Messages);
+    }
 
     [Theory]
     [InlineData("15/07/2022 15:03", "15/07/2022 15:02", 2, "16/07/2022 15:30", "18/07/2022 15:40")]
@@ -257,11 +278,12 @@ public class SqlMessageRepositoryTests
 
     private MessageSqlRow BuildMessageSqlRow(DateTime? lockExpiry = null,
         DateTime? retryAfter = null,
-        DateTime? messageAgeMinutes = null)
+        DateTime? messageAgeMinutes = null,
+        string? duplicateCorrelationId = null)
         => new()
         {
             AttemptCount = new Random().Next(0, 100),
-            CorrelationId = Guid.NewGuid().ToString(),
+            CorrelationId = string.IsNullOrEmpty(duplicateCorrelationId) ? Guid.NewGuid().ToString() : duplicateCorrelationId,
             LastAttempt = DateTime.UtcNow.AddDays(-1),
             MessageBlob = JsonSerializer.Serialize(_tree),
             LockExpiry = lockExpiry,
@@ -312,4 +334,14 @@ public class SqlMessageRepositoryTests
         var savedMessages = _messageDbContext.Messages.Where(m => m.CorrelationId == outboxMessageRow1.CorrelationId);
         AssertLockExpiryTime(savedMessages.First().LockExpiry, DateTime.UtcNow.AddSeconds(_lockExpirySeconds));
     }
+
+    private static Message<Tree> MapToMessage(MessageSqlRow existingMessageRow)
+        => new(existingMessageRow.CorrelationId, JsonSerializer.Deserialize<Tree>(existingMessageRow.MessageBlob)!)
+        {
+            AttemptCount = existingMessageRow.AttemptCount,
+            CompletedOn = existingMessageRow.CompletedOn,
+            LastAttempt = existingMessageRow.LastAttempt,
+            LockExpiry = existingMessageRow.LockExpiry,
+            RetryAfter = existingMessageRow.RetryAfter
+        };
 }

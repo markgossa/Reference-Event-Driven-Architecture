@@ -1,9 +1,11 @@
 ﻿#nullable disable
 
 using Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace Common.Messaging.Repository.Sql.Models;
 
+[Index(nameof(CorrelationId), IsUnique = true)]
 public class MessageSqlRow
 {
     public int Id { get; set; }
