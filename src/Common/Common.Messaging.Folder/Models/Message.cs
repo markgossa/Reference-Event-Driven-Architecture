@@ -8,6 +8,7 @@ public class Message<T>
     public DateTime? LastAttempt { get; set; }
     public DateTime? LockExpiry { get; set; }
     public DateTime? RetryAfter { get; set; }
+    public DateTime? CompletedOn { get; set; }
 
     private const int _lockDuration = 30;
 
@@ -18,6 +19,8 @@ public class Message<T>
     }
 
     public void Lock() => SetLock();
+
+    internal void CompleteMessage() => CompletedOn = DateTime.UtcNow;
 
     internal void FailMessage()
     {

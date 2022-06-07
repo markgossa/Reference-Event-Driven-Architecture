@@ -44,16 +44,17 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddHostedServices(this IServiceCollection services)
-        => services.AddHostedService<BookingReplayHostedService>();
+    public static IServiceCollection AddHostedServices(this IServiceCollection services) 
+        => services.AddHostedService<BookingReplayHostedService>()
+            .AddHostedService<PurgeMessagesHostedService>();
 
-    private static BookingServiceWithOutbox BuildBookingServiceWithOutbox(IServiceProvider sp) 
+    private static BookingServiceWithOutbox BuildBookingServiceWithOutbox(IServiceProvider sp)
         => new(sp.GetRequiredService<ICorrelationIdGenerator>(), sp.GetRequiredService<IMessageOutbox<Booking>>());
 
-    private static IBookingService BuildBookingService(IServiceProvider sp) 
+    private static IBookingService BuildBookingService(IServiceProvider sp)
         => new BookingService(sp.GetRequiredService<IWebBffHttpClient>(), sp.GetRequiredService<ICorrelationIdGenerator>());
 
-    private static BookingReplayService BuildBookingReplayService(IServiceProvider sp) 
+    private static BookingReplayService BuildBookingReplayService(IServiceProvider sp)
         => new(BuildBookingService(sp),
                 sp.GetRequiredService<IMessageOutbox<Booking>>(), sp.GetRequiredService<ILogger<BookingReplayService>>());
 

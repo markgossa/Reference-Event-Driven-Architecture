@@ -13,8 +13,8 @@ public class MessageFolderTests
     [Theory]
     [InlineData("0123456789", "9876543210")]
     [InlineData("9876543210", "0123456789")]
-    public async Task GivenANewInstance_WhenAnOutboxMessageIsAdded_ThenTheItemIsAddedToTheRepository(
-        string source, string destination)
+    public async Task GivenANewInstance_WhenAnOutboxMessageIsAdded_ThenTheItemIsAddedToTheRepositoryAndMessagesAreNotLocked(
+            string source, string destination)
     {
         Message<PhoneCall>? actualOutboxMessage = null;
         _mockOutboxMessageRepository.Setup(m => m.AddAsync(It.IsAny<Message<PhoneCall>>()))
@@ -34,13 +34,14 @@ public class MessageFolderTests
     }
 
     [Fact]
-    public async Task GivenANewInstance_WhenOutboxMessagesAreCompleted_ThenTheItemsAreUpdatedInTheRepository()
+    public async Task GivenANewInstance_WhenOutboxMessagesAreCompleted_ThenTheItemsAreUpdatedInTheRepositoryWithCompletedTime()
     {
         var messages = BuildOutboxMessages();
 
         var sut = new MessageFolder<PhoneCall>(_mockOutboxMessageRepository.Object);
         await sut.CompleteAsync(messages);
 
+        Assert.True(messages.All(m => IsDateTimeNow(m.CompletedOn)));
         _mockOutboxMessageRepository.Verify(m => m.UpdateAsync(messages), Times.Once());
     }
 

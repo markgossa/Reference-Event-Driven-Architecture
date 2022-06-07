@@ -13,4 +13,5 @@ public class MessageSqlRow
     public DateTime? LockExpiry { get; set; }
     public string MessageBlob { get; set; }
     public DateTime? RetryAfter { get; set; }
+    public DateTime? CompletedOn { get; set; }
 }

@@ -64,17 +64,13 @@ public class SqlMessageRepository<T> : IMessageRepository<T>, IDisposable
         return messages;
     }
 
-    //TODO: Add tests and write this method out
-    //public async Task RemoveAsync(IEnumerable<string> correlationIds)
-    //{
-    //    foreach (var correlationId in correlationIds)
-    //    {
-    //        _outboxMessageDbContext.RemoveRange(
-    //            _outboxMessageDbContext.Messages.Where(m => m.CorrelationId == correlationId));
-    //    }
+    public async Task RemoveAsync(int minMessageAgeMinutes)
+    {
+        var minimumAge = DateTime.UtcNow.AddMinutes(-minMessageAgeMinutes);
+        _outboxMessageDbContext.RemoveRange(_outboxMessageDbContext.Messages.Where(m => m.CompletedOn <= minimumAge));
 
-    //    await _outboxMessageDbContext.SaveChangesAsync();
-    //}
+        await _outboxMessageDbContext.SaveChangesAsync();
+    }
 
     private async Task<IEnumerable<Message<T>>> GetMessagesAsync(int count)
         => await _outboxMessageDbContext.Messages
@@ -127,6 +123,7 @@ public class SqlMessageRepository<T> : IMessageRepository<T>, IDisposable
             messageRow.LastAttempt = message.LastAttempt;
             messageRow.LockExpiry = message.LockExpiry;
             messageRow.RetryAfter = message.RetryAfter;
+            messageRow.CompletedOn = message.CompletedOn;
         }
     }
 

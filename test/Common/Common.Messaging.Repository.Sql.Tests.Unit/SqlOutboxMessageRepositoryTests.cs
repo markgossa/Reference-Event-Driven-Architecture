@@ -48,10 +48,10 @@ public class SqlMessageRepositoryTests
     }
 
     [Theory]
-    [InlineData("15/07/2022 15:03", "15/07/2022 15:02", 2, "16/07/2022 15:30")]
-    [InlineData(null, null, 5, null)]
+    [InlineData("15/07/2022 15:03", "15/07/2022 15:02", 2, "16/07/2022 15:30", "18/07/2022 15:40")]
+    [InlineData(null, null, 5, null, null)]
     public async Task GivenNewInstance_WhenAMessageIsUpdated_ThenTheMessageIsUpdatedInSql(string lockExpiry,
-        string lastAttempt, int attemptCount, string retryAfter)
+        string lastAttempt, int attemptCount, string retryAfter, string completedOn)
     {
         var message = BuildMessageSqlRow();
         await AddMessageToDatabaseAsync(message);
@@ -62,7 +62,8 @@ public class SqlMessageRepositoryTests
             LockExpiry = ParseDate(lockExpiry),
             LastAttempt = ParseDate(lastAttempt),
             AttemptCount = attemptCount,
-            RetryAfter = ParseDate(retryAfter)
+            RetryAfter = ParseDate(retryAfter),
+            CompletedOn = ParseDate(completedOn)
         };
 
         await sut.UpdateAsync(new List<Message<Tree>> { messageToUpdate });
@@ -184,6 +185,32 @@ public class SqlMessageRepositoryTests
         AssertPropertiesReturned(outboxMessageRow2, messages.LastOrDefault(), isMessageLocked: true);
     }
 
+    [Theory]
+    [InlineData(1, 5, 1)]
+    [InlineData(1, 2, 1)]
+    [InlineData(10, 9, 0)]
+    public async Task GivenNewInstance_WhenIRemoveMessages_ThenxMessagesWithCompletedOnOlderThanMinMessageAgeMinutesAreRemoved(
+        int messageAgeInMinutes, int minMessageAgeMinutes, int expectedMessageCount)
+    {
+        var outboxMessageRow = BuildMessageSqlRow(null, null, messageAgeMinutes: DateTime.UtcNow.AddMinutes(-messageAgeInMinutes));
+        await AddMessageToDatabaseAsync(outboxMessageRow);
+
+        var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
+        await sut.RemoveAsync(minMessageAgeMinutes);
+
+        Assert.Equal(expectedMessageCount, _messageDbContext.Messages.Count());
+    }
+    
+    [Theory]
+    [InlineData(1)]
+    [InlineData(10)]
+    public async Task GivenNewInstance_WhenIRemoveMessagesAndThereAreNoMessages_ThenDoesNotThrow(
+        int maxMessageAgeMinutes)
+    {
+        var sut = new SqlMessageRepository<Tree>(_messageDbContext, _logger.Object);
+        await sut.RemoveAsync(maxMessageAgeMinutes);
+    }
+
     private static DateTime? ParseDate(string date)
         => !string.IsNullOrWhiteSpace(date) ? DateTime.Parse(date) : null;
 
@@ -217,6 +244,7 @@ public class SqlMessageRepositoryTests
         Assert.Single(savedMessages.Where(m => m.AttemptCount == messageToAdd.AttemptCount));
         Assert.Single(savedMessages.Where(m => m.LockExpiry == messageToAdd.LockExpiry));
         Assert.Single(savedMessages.Where(m => m.RetryAfter == messageToAdd.RetryAfter));
+        Assert.Single(savedMessages.Where(m => m.CompletedOn == messageToAdd.CompletedOn));
         Assert.Single(savedMessages.Where(m => m.MessageBlob == JsonSerializer.Serialize(messageToAdd.MessageObject,
             new JsonSerializerOptions())));
     }
@@ -228,7 +256,8 @@ public class SqlMessageRepositoryTests
     }
 
     private MessageSqlRow BuildMessageSqlRow(DateTime? lockExpiry = null,
-        DateTime? retryAfter = null)
+        DateTime? retryAfter = null,
+        DateTime? messageAgeMinutes = null)
         => new()
         {
             AttemptCount = new Random().Next(0, 100),
@@ -236,7 +265,8 @@ public class SqlMessageRepositoryTests
             LastAttempt = DateTime.UtcNow.AddDays(-1),
             MessageBlob = JsonSerializer.Serialize(_tree),
             LockExpiry = lockExpiry,
-            RetryAfter = retryAfter
+            RetryAfter = retryAfter,
+            CompletedOn = messageAgeMinutes
         };
 
     private static void AssertPropertiesReturned(MessageSqlRow outboxMessageRow, Message<Tree>? outboxMessage,
