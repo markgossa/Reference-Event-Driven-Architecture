@@ -1,2 +1,2 @@
-﻿namespace Common.Messaging.Outbox.Sql.Tests.Unit.Models;
+﻿namespace Common.Messaging.Repository.Sql.Tests.Unit.Models;
 public record Tree(string Name, int Height);

@@ -1,7 +1,7 @@
 ﻿using Common.Messaging.Folder.Models;
-using Common.Messaging.Outbox.Sql.Tests.Unit.Models;
 using Common.Messaging.Repository.Sql;
 using Common.Messaging.Repository.Sql.Models;
+using Common.Messaging.Repository.Sql.Tests.Unit.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,7 +11,7 @@ using System.Data.Common;
 using System.Text.Json;
 using Xunit;
 
-namespace Common.Messaging.Outbox.Sql.Tests.Unit;
+namespace Common.Messaging.Repository.Sql.Tests.Unit;
 public class SqlMessageRepositoryTests
 {
     private readonly ServiceProvider _serviceProvider;
@@ -200,7 +200,7 @@ public class SqlMessageRepositoryTests
 
         Assert.Equal(expectedMessageCount, _messageDbContext.Messages.Count());
     }
-    
+
     [Theory]
     [InlineData(1)]
     [InlineData(10)]
