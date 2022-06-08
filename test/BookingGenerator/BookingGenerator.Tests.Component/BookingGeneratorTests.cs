@@ -14,6 +14,7 @@ public class BookingGeneratorTests : IClassFixture<ApiTestsContext>
 {
     private const string _apiRoute = "bookings";
     private const string _apiRouteV1 = "v1/bookings";
+    private const string _correlationIdHeader = "X-Correlation-Id";
     private readonly ApiTestsContext _context;
 
     public BookingGeneratorTests(ApiTestsContext context) => _context = context;
@@ -70,6 +71,16 @@ public class BookingGeneratorTests : IClassFixture<ApiTestsContext>
         Assert.Equal(HttpStatusCode.InternalServerError, httpResponse.StatusCode);
     }
 
+    [Fact]
+    public async Task GivenValidBookingRequest_WhenPostEndpointCalledWithDuplicateCorrelationId_ThenReturnsConflict()
+    {
+        var bookingRequest = BuildBookingRequest("Duplicate", "Bloggs", 5, 29, "Belize", 1700);
+
+        var httpResponse = await MakeBookingAsync(bookingRequest, _apiRoute);
+
+        Assert.Equal(HttpStatusCode.Conflict, httpResponse.StatusCode);
+    }
+
     private async Task<HttpResponseMessage> MakeBookingAsync(BookingRequest bookingRequest, string apiRoute)
             => await _context.HttpClient.PostAsync(apiRoute, BuildHttpContent(bookingRequest));
 
@@ -109,7 +120,7 @@ public class BookingGeneratorTests : IClassFixture<ApiTestsContext>
 
     private void AssertReturnsNewCorrelationId(HttpResponseMessage response)
     {
-        response.Headers.TryGetValues("X-Correlation-Id", out var correlationIdValues);
+        response.Headers.TryGetValues(_correlationIdHeader, out var correlationIdValues);
         Assert.Equal(_context.CorrelationId.ToString(), correlationIdValues?.First());
     }
 }

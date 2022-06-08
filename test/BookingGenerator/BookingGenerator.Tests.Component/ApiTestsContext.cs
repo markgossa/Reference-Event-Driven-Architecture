@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System.Net.Http;
 using AspNet.CorrelationIdGenerator;
+using Common.Messaging.Folder.Models;
 
 namespace BookingGenerator.Tests.Component;
 
@@ -25,8 +26,13 @@ public class ApiTestsContext : IDisposable
     }
 
     private void SetUpMockBookingService()
-        => MockBookingService.Setup(m => m.BookAsync(It.Is<Booking>(t => t.FirstName == "Unlucky"), It.IsAny<string>()))
+    {
+        MockBookingService.Setup(m => m.BookAsync(It.Is<Booking>(t => t.FirstName == "Unlucky"), It.IsAny<string>()))
             .ThrowsAsync(new Exception());
+        
+        MockBookingService.Setup(m => m.BookAsync(It.Is<Booking>(t => t.FirstName == "Duplicate"), It.IsAny<string>()))
+            .ThrowsAsync(new DuplicateMessageException());
+    }
 
     protected WebApplicationFactory<Startup> BuildWebApplicationFactory()
         => new WebApplicationFactory<Startup>()
