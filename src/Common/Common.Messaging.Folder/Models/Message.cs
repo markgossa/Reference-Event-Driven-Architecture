@@ -9,13 +9,14 @@ public class Message<T>
     public DateTime? LockExpiry { get; set; }
     public DateTime? RetryAfter { get; set; }
     public DateTime? CompletedOn { get; set; }
-
+    public string? MessageType { get; set; }
     private const int _lockDuration = 30;
 
     public Message(string correlationId, T messageObject)
     {
         CorrelationId = correlationId;
         MessageObject = messageObject;
+        MessageType = typeof(T).Name;
     }
 
     public void Lock() => SetLock();

@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using System.Net.Http;
 using WebBff.Api;
-using WebBff.Application.Repositories;
+using WebBff.Application.Infrastructure;
 using WebBff.Domain.Models;
 
 namespace WebBff.Tests.Component;
@@ -13,7 +13,7 @@ namespace WebBff.Tests.Component;
 public class ApiTestsContext : IDisposable
 {
     public HttpClient HttpClient { get; }
-    public Mock<IBookingRepository> MockBookingRepository { get; } = new();
+    public Mock<IMessageBusOutbox> MockMessageBusOutbox { get; } = new();
     public readonly string CorrelationId = Guid.NewGuid().ToString();
 
     protected const string _errorFirstName = "Unlucky";
@@ -23,11 +23,11 @@ public class ApiTestsContext : IDisposable
     {
         HttpClient = BuildWebApplicationFactory().CreateClient();
         _mockCorrelationIdGenerator.Setup(m => m.Get()).Returns(CorrelationId);
-        SetUpMockBookingRepository();
+        SetUpMockMessageBus();
     }
 
-    private void SetUpMockBookingRepository()
-        => MockBookingRepository.Setup(m => m.SendBookingAsync(It.Is<Booking>(
+    private void SetUpMockMessageBus()
+        => MockMessageBusOutbox.Setup(m => m.PublishBookingCreatedAsync(It.Is<Booking>(
             b => b.FirstName == _errorFirstName))).Throws<Exception>();
 
     protected WebApplicationFactory<Startup> BuildWebApplicationFactory()
@@ -45,7 +45,7 @@ public class ApiTestsContext : IDisposable
     private void RegisterServices(ServiceCollection services)
     {
         services.AddSingleton(_mockCorrelationIdGenerator.Object);
-        services.AddSingleton(MockBookingRepository.Object);
+        services.AddSingleton(MockMessageBusOutbox.Object);
     }
 
     public void Dispose()

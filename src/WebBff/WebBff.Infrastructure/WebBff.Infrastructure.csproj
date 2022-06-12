@@ -13,6 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\Common.Messaging.Folder\Common.Messaging.Folder.csproj" />
     <ProjectReference Include="..\..\Common\Contracts.Messages\Contracts.Messages.csproj" />
     <ProjectReference Include="..\WebBff.Application\WebBff.Application.csproj" />
     <ProjectReference Include="..\WebBff.Domain\WebBff.Domain.csproj" />

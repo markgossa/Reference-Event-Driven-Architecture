@@ -1,19 +1,19 @@
 ﻿using MediatR;
-using WebBff.Application.Repositories;
+using WebBff.Application.Infrastructure;
 using WebBff.Domain.Models;
 
 namespace WebBff.Application.Services.Bookings.Commands.MakeBooking;
 
 internal class MakeBookingCommandHandler : IRequestHandler<MakeBookingCommand>
 {
-    private readonly IBookingRepository _bookingRepository;
+    private readonly IMessageBusOutbox _messageBus;
 
-    public MakeBookingCommandHandler(IBookingRepository bookingRepository) 
-        => _bookingRepository = bookingRepository;
+    public MakeBookingCommandHandler(IMessageBusOutbox messageBus) 
+        => _messageBus = messageBus;
 
     public async Task<Unit> Handle(MakeBookingCommand makeBookingCommand, CancellationToken cancellationToken)
     {
-        await _bookingRepository.SendBookingAsync(MapToBooking(makeBookingCommand));
+        await _messageBus.PublishBookingCreatedAsync(MapToBooking(makeBookingCommand));
 
         return Unit.Value;
     }

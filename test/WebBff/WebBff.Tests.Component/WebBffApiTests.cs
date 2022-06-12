@@ -24,7 +24,7 @@ public class WebBffApiTests : IClassFixture<ApiTestsContext>
     [InlineData("Mary", "Bloggs", 0, 5, "Malta", 100.43, _apiRoute)]
     [InlineData("John", "Smith", 10, 15, "Corfu", 100.43, _apiRouteV1)]
     [InlineData("Emilia", "Smith", 10, 15, "Corfu", 100.43, _apiRouteV1)]
-    public async Task GivenValidBookingRequest_WhenPostEndpointCalled_ThenPublishesBookingCreatedMessageAndReturnsAccepted(
+    public async Task GivenValidBookingRequest_WhenPostEndpointCalled_ThenPublishesBookingCreatedEventAndReturnsAccepted(
         string firstName, string lastName, int daysTillStartDate, int daysTillEndDate, string destination,
         decimal price, string apiRoute)
     {
@@ -36,7 +36,7 @@ public class WebBffApiTests : IClassFixture<ApiTestsContext>
 
         Assert.Equal(HttpStatusCode.Accepted, httpResponse.StatusCode);
         AssertBookingResponseEqualToBookingRequest(bookingRequest, bookingResponse);
-        AssertBookingCreatedMessageSent(bookingRequest);
+        AssertBookingCreatedEventPublished(bookingRequest);
     }
 
     [Theory]
@@ -54,7 +54,7 @@ public class WebBffApiTests : IClassFixture<ApiTestsContext>
 
         Assert.Equal(HttpStatusCode.Accepted, httpResponse.StatusCode);
         AssertReturnsNewCorrelationId(httpResponse);
-        AssertBookingCreatedMessageSent(bookingRequest);
+        AssertBookingCreatedEventPublished(bookingRequest);
     }
 
     [Theory]
@@ -112,6 +112,6 @@ public class WebBffApiTests : IClassFixture<ApiTestsContext>
         Assert.Equal(_context.CorrelationId.ToString(), correlationIdValues?.First());
     }
 
-    private void AssertBookingCreatedMessageSent(BookingRequest bookingRequest)
-        => _context.MockBookingRepository.Verify(m => m.SendBookingAsync(BuildBooking(bookingRequest)), Times.Once);
+    private void AssertBookingCreatedEventPublished(BookingRequest bookingRequest)
+        => _context.MockMessageBusOutbox.Verify(m => m.PublishBookingCreatedAsync(BuildBooking(bookingRequest)), Times.Once);
 }

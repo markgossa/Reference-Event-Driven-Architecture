@@ -29,6 +29,7 @@ public class Startup
             .AddMediatorServices()
             .AddApplicationInsightsTelemetry()
             .AddServices(Configuration)
+            .AddHostedServices()
             .AddBus(Configuration)
             .AddCorrelationIdGenerator()
             .AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerGenOptions>()

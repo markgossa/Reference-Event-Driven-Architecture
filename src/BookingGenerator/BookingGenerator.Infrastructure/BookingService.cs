@@ -19,7 +19,8 @@ public class BookingService : IBookingService
     public async Task BookAsync(Booking booking, string? correlationId = null) 
         => await _httpClient.PostAsync(booking, GetCorrelationId(correlationId));
 
-    private string GetCorrelationId(string? correlationId) => string.IsNullOrWhiteSpace(correlationId)
-                ? _correlationIdGenerator.Get()
-                : correlationId;
+    private string GetCorrelationId(string? correlationId) 
+        => string.IsNullOrWhiteSpace(correlationId)
+            ? _correlationIdGenerator.Get()
+            : correlationId;
 }

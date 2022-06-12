@@ -1,6 +1,7 @@
 ﻿using Common.Messaging.Folder.Models;
 using Common.Messaging.Folder.Repositories;
 using Common.Messaging.Repository.Sql.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -22,6 +23,13 @@ public class SqlMessageRepository<T> : IMessageRepository<T>, IDisposable
         try
         {
             await AddMessageAsync(message);
+        }
+        catch (DbUpdateException ex) when (!string.IsNullOrWhiteSpace(ex.InnerException?.Message) 
+            && (ex.InnerException.Message.Contains("UNIQUE constraint failed")
+                || ((SqlException)ex.InnerException).Number == 2601
+                || ((SqlException)ex.InnerException).Number == 2627))
+        {
+            throw new DuplicateMessageException("Duplicate message received", ex);
         }
         catch (Exception ex)
         {
@@ -74,8 +82,8 @@ public class SqlMessageRepository<T> : IMessageRepository<T>, IDisposable
 
     private async Task<IEnumerable<Message<T>>> GetMessagesAsync(int count)
         => await _outboxMessageDbContext.Messages
-            .Where(m =>
-                (m.LockExpiry == null || DateTime.UtcNow > m.LockExpiry)
+            .Where(m => m.CompletedOn == null
+                && (m.LockExpiry == null || DateTime.UtcNow > m.LockExpiry)
                 && (m.RetryAfter == null || DateTime.UtcNow > m.RetryAfter))
             .OrderBy(m => m.RetryAfter)
             .Take(count)
@@ -124,6 +132,7 @@ public class SqlMessageRepository<T> : IMessageRepository<T>, IDisposable
             messageRow.LockExpiry = message.LockExpiry;
             messageRow.RetryAfter = message.RetryAfter;
             messageRow.CompletedOn = message.CompletedOn;
+            messageRow.MessageType = message.MessageType;
         }
     }
 
@@ -134,7 +143,8 @@ public class SqlMessageRepository<T> : IMessageRepository<T>, IDisposable
             LastAttempt = message.LastAttempt,
             AttemptCount = message.AttemptCount,
             LockExpiry = message.LockExpiry,
-            MessageBlob = JsonSerializer.Serialize(message.MessageObject)
+            MessageBlob = JsonSerializer.Serialize(message.MessageObject),
+            MessageType = message.MessageType
         };
 
     private static void LockMessages(IEnumerable<Message<T>> messages)

@@ -3,7 +3,6 @@ using BookingGenerator.Application.Repositories;
 using BookingGenerator.Domain.Models;
 using Common.Messaging.Folder;
 using Common.Messaging.Folder.Models;
-using Microsoft.Extensions.Logging;
 using Moq;
 using System.Net.Http;
 
@@ -40,7 +39,7 @@ public class BookingServiceWithOutboxTestsBase
         }
     }
 
-    protected static void AssertFailedMessagesNotCompletedInOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox, IEnumerable
+    protected static void AssertMessagesNotCompletedInOutbox(Mock<IMessageOutbox<Booking>> mockMessageOutbox, IEnumerable
         <Message<Booking>> failedMessages)
     {
         mockMessageOutbox.Verify(m => m.CompleteAsync(failedMessages), Times.Never);

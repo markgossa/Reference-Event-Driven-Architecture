@@ -1,4 +1,3 @@
-using Common.Messaging.Folder;
 using Common.Messaging.Folder.Models;
 using Common.Messaging.Folder.Repositories;
 using Common.Messaging.Folder.Tests.Unit.Models;
@@ -31,6 +30,7 @@ public class MessageFolderTests
         Assert.Equal(0, actualOutboxMessage?.AttemptCount);
         Assert.Null(actualOutboxMessage?.LastAttempt);
         Assert.Null(actualOutboxMessage?.LockExpiry);
+        Assert.Equal(nameof(PhoneCall), actualOutboxMessage?.MessageType);
     }
 
     [Fact]

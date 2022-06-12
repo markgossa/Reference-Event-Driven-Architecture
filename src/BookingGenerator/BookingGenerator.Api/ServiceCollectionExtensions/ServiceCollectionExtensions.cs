@@ -46,7 +46,7 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddHostedServices(this IServiceCollection services) 
         => services.AddHostedService<BookingReplayHostedService>()
-            .AddHostedService<PurgeMessagesHostedService>();
+            .AddHostedService<PurgeMessagesHostedService<Booking>>();
 
     private static BookingServiceWithOutbox BuildBookingServiceWithOutbox(IServiceProvider sp)
         => new(sp.GetRequiredService<ICorrelationIdGenerator>(), sp.GetRequiredService<IMessageOutbox<Booking>>());

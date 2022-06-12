@@ -1,17 +1,18 @@
-﻿using BookingGenerator.Infrastructure;
+﻿
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using WebBff.Infrastructure.Interfaces;
 
-namespace BookingGenerator.Api.HostedServices;
+namespace WebBff.Api.HostedServices;
 
-internal class BookingReplayHostedService : BackgroundService
+internal class MessageProcessorHostedService : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<BookingReplayHostedService> _logger;
+    private readonly ILogger<MessageProcessorHostedService> _logger;
 
-    public BookingReplayHostedService(IServiceProvider serviceProvider,
-        ILogger<BookingReplayHostedService> logger)
+    public MessageProcessorHostedService(IServiceProvider serviceProvider,
+        ILogger<MessageProcessorHostedService> logger)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -19,7 +20,7 @@ internal class BookingReplayHostedService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation($"Starting {nameof(BookingReplayHostedService)}");
+        _logger.LogInformation($"Starting {nameof(MessageProcessorHostedService)}");
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -27,13 +28,13 @@ internal class BookingReplayHostedService : BackgroundService
             await Task.Delay(1000, cancellationToken);
         }
 
-        _logger.LogInformation($"Shutting down {nameof(BookingReplayHostedService)}");
+        _logger.LogInformation($"Shutting down {nameof(MessageProcessorHostedService)}");
     }
 
     private async Task ReplayMessagesAsync()
     {
         using var scope = _serviceProvider.CreateScope();
-        await scope.ServiceProvider.GetRequiredService<IBookingReplayService>()
-            .ReplayBookingsAsync();
+        await scope.ServiceProvider.GetRequiredService<IMessageProcessor>()
+            .PublishBookingCreatedMessagesAsync();
     }
 }

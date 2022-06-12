@@ -1,0 +1,89 @@
+﻿using Common.Messaging.Folder;
+using Common.Messaging.Folder.Models;
+using Microsoft.Extensions.Logging;
+using Moq;
+using WebBff.Application.Infrastructure;
+using WebBff.Domain.Models;
+
+namespace WebBff.Infrastructure.Tests.Unit;
+public class MessageProcessorTests
+{
+    private readonly Mock<ILogger<MessageProcessor>> _logger = new();
+    private readonly string _failedBooking = "Unlucky";
+
+    [Fact]
+    public async Task GivenNewInstance_WhenABookingCreatedMessageIsPublishedSuccessfully_ThenSetsMessageAsCompletedInOutbox()
+    {
+        var mockMessageBus = SetUpMockMessageBus();
+        var outboxMessages = BuildOutboxMessages();
+        var mockMessageOutbox = SetUpMockMessageOutbox(outboxMessages);
+
+        var sut = new MessageProcessor(mockMessageBus.Object, mockMessageOutbox.Object, _logger.Object);
+        await sut.PublishBookingCreatedMessagesAsync();
+
+        AssertAttemptsToPublishBookingCreatedMessages(mockMessageBus, outboxMessages);
+        AssertSuccessfulMessagesSetAsCompletedInOutbox(outboxMessages, mockMessageOutbox);
+        AssertFailedMessagesSetAsFailedInOutbox(outboxMessages, mockMessageOutbox);
+    }
+
+    private void AssertSuccessfulMessagesSetAsCompletedInOutbox(IEnumerable<Message<Booking>> outboxMessages, Mock<IMessageOutbox<Booking>> mockMessageOutbox)
+    {
+        foreach (var outboxMessage in outboxMessages.Where(m => !m.MessageObject.FirstName.Equals(_failedBooking)))
+        {
+            mockMessageOutbox.Verify(m => m.CompleteAsync(new List<Message<Booking>>() { outboxMessage }), Times.Once);
+        }
+    }
+    
+    private void AssertFailedMessagesSetAsFailedInOutbox(IEnumerable<Message<Booking>> outboxMessages, Mock<IMessageOutbox<Booking>> mockMessageOutbox)
+    {
+        foreach (var outboxMessage in outboxMessages.Where(m => m.MessageObject.FirstName.Equals(_failedBooking)))
+        {
+            mockMessageOutbox.Verify(m => m.FailAsync(new List<Message<Booking>>() { outboxMessage }), Times.Once);
+            mockMessageOutbox.Verify(m => m.CompleteAsync(new List<Message<Booking>>() { outboxMessage }), Times.Never);
+        }
+    }
+
+    private Mock<IMessageBus> SetUpMockMessageBus()
+    {
+        var mockMessageBus = new Mock<IMessageBus>();
+        mockMessageBus.Setup(m => m.PublishBookingCreatedAsync(It.Is<Booking>(b => b.FirstName.Equals(_failedBooking))))
+            .ThrowsAsync(new Exception());
+        return mockMessageBus;
+    }
+
+    private static Mock<IMessageOutbox<Booking>> SetUpMockMessageOutbox(IEnumerable<Message<Booking>> outboxMessages)
+    {
+        var mockMessageOutbox = new Mock<IMessageOutbox<Booking>>();
+        mockMessageOutbox.Setup(m => m.GetAndLockAsync(4)).ReturnsAsync(outboxMessages);
+        return mockMessageOutbox;
+    }
+
+    private static void AssertAttemptsToPublishBookingCreatedMessages(Mock<IMessageBus> mockMessageBus, 
+        IEnumerable<Message<Booking>> outboxMessages)
+    {
+        foreach (var booking in outboxMessages.Select(m => m.MessageObject))
+        {
+            mockMessageBus.Verify(m => m.PublishBookingCreatedAsync(booking), Times.Once);
+        }
+    }
+
+    private IEnumerable<Message<Booking>> BuildOutboxMessages()
+        => new List<Message<Booking>>
+            {
+                new Message<Booking>(Guid.NewGuid().ToString(),
+                    BuildNewBooking("Joe", "Bloggs", "10/07/2022", "25/07/2022", "Malta", 500.43m)),
+
+                new Message<Booking>(Guid.NewGuid().ToString(),
+                    BuildNewBooking("John", "Smith", "11/07/2022", "24/07/2022", "Corfu", 305m)),
+
+                new Message<Booking>(Guid.NewGuid().ToString(),
+                    BuildNewBooking(_failedBooking, "Bloggs", "10/07/2022", "25/07/2022", "Malta", 500.43m)),
+
+                new Message<Booking>(Guid.NewGuid().ToString(),
+                    BuildNewBooking(_failedBooking, "Smith", "11/07/2022", "24/07/2022", "Corfu", 305m))
+            }.AsEnumerable();
+
+    private static Booking BuildNewBooking(string firstName, string lastName, string startDate,
+        string endDate, string destination, decimal price)
+            => new(firstName, lastName, DateTime.Parse(startDate), DateTime.Parse(endDate), destination, price);
+}

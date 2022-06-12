@@ -1,9 +1,11 @@
 ﻿#nullable disable
 
 using Common;
+using Microsoft.EntityFrameworkCore;
 
 namespace Common.Messaging.Repository.Sql.Models;
 
+[Index(nameof(CorrelationId), IsUnique = true)]
 public class MessageSqlRow
 {
     public int Id { get; set; }
@@ -14,4 +16,5 @@ public class MessageSqlRow
     public string MessageBlob { get; set; }
     public DateTime? RetryAfter { get; set; }
     public DateTime? CompletedOn { get; set; }
+    public string MessageType { get; set; }
 }

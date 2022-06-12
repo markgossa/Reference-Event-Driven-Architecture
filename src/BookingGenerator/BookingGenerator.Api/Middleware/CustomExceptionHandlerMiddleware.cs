@@ -1,4 +1,5 @@
 ﻿using BookingGenerator.Application.Exceptions;
+using Common.Messaging.Folder.Models;
 using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using System.Net;
@@ -37,6 +38,9 @@ public class CustomExceptionHandlerMiddleware
                 break;
             case NotFoundException _:
                 httpStatusCode = HttpStatusCode.NotFound;
+                break;
+            case DuplicateMessageException _:
+                httpStatusCode = HttpStatusCode.Conflict;
                 break;
         }
 
