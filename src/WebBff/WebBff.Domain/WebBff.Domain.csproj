@@ -5,4 +5,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="WebBff.Domain.v3.ncrunchproject" />
+  </ItemGroup>
+
 </Project>

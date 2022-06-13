@@ -1,5 +1,4 @@
 ﻿using Common.Messaging.Folder.Models;
-using Common.Messaging.Repository.Sql;
 using Common.Messaging.Repository.Sql.Models;
 using Common.Messaging.Repository.Sql.Tests.Unit.Models;
 using Microsoft.Data.Sqlite;

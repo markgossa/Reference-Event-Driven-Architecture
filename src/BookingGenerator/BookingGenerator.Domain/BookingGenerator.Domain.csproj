@@ -5,4 +5,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Remove="BookingGenerator.Domain.v3.ncrunchproject" />
+  </ItemGroup>
+
 </Project>
