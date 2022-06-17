@@ -16,6 +16,8 @@ public class ApiTestsContext : IDisposable
 {
     public Mock<IBookingService> MockBookingService { get; } = new();
     public HttpClient HttpClient { get; }
+    public string FailureFirstName { get; } = "Unlucky";
+    public string DuplicateFirstName { get; } = "Duplicate";
     private readonly Mock<ICorrelationIdGenerator> _mockCorrelationIdGenerator = new();
     public readonly string CorrelationId = Guid.NewGuid().ToString();
 
@@ -28,11 +30,11 @@ public class ApiTestsContext : IDisposable
 
     private void SetUpMockBookingService()
     {
-        MockBookingService.Setup(m => m.BookAsync(It.Is<Booking>(t => t.FirstName == "Unlucky"), It.IsAny<string>()))
-            .ThrowsAsync(new Exception());
+        MockBookingService.Setup(m => m.BookAsync(It.Is<Booking>(t => t.BookingSummary.FirstName == FailureFirstName), 
+            It.IsAny<string>())).ThrowsAsync(new Exception());
         
-        MockBookingService.Setup(m => m.BookAsync(It.Is<Booking>(t => t.FirstName == "Duplicate"), It.IsAny<string>()))
-            .ThrowsAsync(new DuplicateMessageException());
+        MockBookingService.Setup(m => m.BookAsync(It.Is<Booking>(t => t.BookingSummary.FirstName == DuplicateFirstName), 
+            It.IsAny<string>())).ThrowsAsync(new DuplicateMessageException());
     }
 
     protected WebApplicationFactory<Startup> BuildWebApplicationFactory()

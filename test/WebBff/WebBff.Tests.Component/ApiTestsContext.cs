@@ -28,7 +28,7 @@ public class ApiTestsContext : IDisposable
 
     private void SetUpMockMessageBus()
         => MockMessageBusOutbox.Setup(m => m.PublishBookingCreatedAsync(It.Is<Booking>(
-            b => b.FirstName == _errorFirstName))).Throws<Exception>();
+            b => b.BookingSummary.FirstName == _errorFirstName))).Throws<Exception>();
 
     protected WebApplicationFactory<Startup> BuildWebApplicationFactory()
         => new WebApplicationFactory<Startup>()

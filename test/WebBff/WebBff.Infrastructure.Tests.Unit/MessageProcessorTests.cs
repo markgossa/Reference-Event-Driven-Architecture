@@ -6,7 +6,7 @@ using WebBff.Application.Infrastructure;
 using WebBff.Domain.Models;
 
 namespace WebBff.Infrastructure.Tests.Unit;
-public class MessageProcessorTests
+public class MessageProcessorTests : MessageBusOutboxTestsBase
 {
     private readonly Mock<ILogger<MessageProcessor>> _logger = new();
     private readonly string _failedBooking = "Unlucky";
@@ -28,7 +28,7 @@ public class MessageProcessorTests
 
     private void AssertSuccessfulMessagesSetAsCompletedInOutbox(IEnumerable<Message<Booking>> outboxMessages, Mock<IMessageOutbox<Booking>> mockMessageOutbox)
     {
-        foreach (var outboxMessage in outboxMessages.Where(m => !m.MessageObject.FirstName.Equals(_failedBooking)))
+        foreach (var outboxMessage in outboxMessages.Where(m => !m.MessageObject.BookingSummary.FirstName.Equals(_failedBooking)))
         {
             mockMessageOutbox.Verify(m => m.CompleteAsync(new List<Message<Booking>>() { outboxMessage }), Times.Once);
         }
@@ -36,7 +36,7 @@ public class MessageProcessorTests
     
     private void AssertFailedMessagesSetAsFailedInOutbox(IEnumerable<Message<Booking>> outboxMessages, Mock<IMessageOutbox<Booking>> mockMessageOutbox)
     {
-        foreach (var outboxMessage in outboxMessages.Where(m => m.MessageObject.FirstName.Equals(_failedBooking)))
+        foreach (var outboxMessage in outboxMessages.Where(m => m.MessageObject.BookingSummary.FirstName.Equals(_failedBooking)))
         {
             mockMessageOutbox.Verify(m => m.FailAsync(new List<Message<Booking>>() { outboxMessage }), Times.Once);
             mockMessageOutbox.Verify(m => m.CompleteAsync(new List<Message<Booking>>() { outboxMessage }), Times.Never);
@@ -46,8 +46,7 @@ public class MessageProcessorTests
     private Mock<IMessageBus> SetUpMockMessageBus()
     {
         var mockMessageBus = new Mock<IMessageBus>();
-        mockMessageBus.Setup(m => m.PublishBookingCreatedAsync(It.Is<Booking>(b => b.FirstName.Equals(_failedBooking))))
-            .ThrowsAsync(new Exception());
+        mockMessageBus.Setup(m => m.PublishBookingCreatedAsync(It.Is<Booking>(b => b.BookingSummary.FirstName.Equals(_failedBooking)))).ThrowsAsync(new Exception());
         return mockMessageBus;
     }
 
@@ -61,9 +60,9 @@ public class MessageProcessorTests
     private static void AssertAttemptsToPublishBookingCreatedMessages(Mock<IMessageBus> mockMessageBus, 
         IEnumerable<Message<Booking>> outboxMessages)
     {
-        foreach (var booking in outboxMessages.Select(m => m.MessageObject))
+        foreach (var outboxMessage in outboxMessages)
         {
-            mockMessageBus.Verify(m => m.PublishBookingCreatedAsync(booking), Times.Once);
+            mockMessageBus.Verify(m => m.PublishBookingCreatedAsync(outboxMessage.MessageObject), Times.Once);
         }
     }
 
@@ -71,19 +70,15 @@ public class MessageProcessorTests
         => new List<Message<Booking>>
             {
                 new Message<Booking>(Guid.NewGuid().ToString(),
-                    BuildNewBooking("Joe", "Bloggs", "10/07/2022", "25/07/2022", "Malta", 500.43m)),
+                    BuildNewBooking()),
 
                 new Message<Booking>(Guid.NewGuid().ToString(),
-                    BuildNewBooking("John", "Smith", "11/07/2022", "24/07/2022", "Corfu", 305m)),
+                    BuildNewBooking()),
 
                 new Message<Booking>(Guid.NewGuid().ToString(),
-                    BuildNewBooking(_failedBooking, "Bloggs", "10/07/2022", "25/07/2022", "Malta", 500.43m)),
+                    BuildNewBooking(_failedBooking)),
 
                 new Message<Booking>(Guid.NewGuid().ToString(),
-                    BuildNewBooking(_failedBooking, "Smith", "11/07/2022", "24/07/2022", "Corfu", 305m))
+                    BuildNewBooking(_failedBooking))
             }.AsEnumerable();
-
-    private static Booking BuildNewBooking(string firstName, string lastName, string startDate,
-        string endDate, string destination, decimal price)
-            => new(firstName, lastName, DateTime.Parse(startDate), DateTime.Parse(endDate), destination, price);
 }

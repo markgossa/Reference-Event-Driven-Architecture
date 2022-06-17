@@ -9,28 +9,25 @@ namespace WebBff.Infrastructure;
 public class MessageBusOutbox : IMessageBusOutbox
 {
     private readonly IMessageOutbox<Booking> _messageOutbox;
-    private readonly ICorrelationIdGenerator _correlationIdGenerator;
     private readonly ILogger<MessageBusOutbox> _logger;
 
     public MessageBusOutbox(IMessageOutbox<Booking> messageOutbox, 
-        ICorrelationIdGenerator correlationIdGenerator, ILogger<MessageBusOutbox> logger)
+        ILogger<MessageBusOutbox> logger)
     {
         _messageOutbox = messageOutbox;
-        _correlationIdGenerator = correlationIdGenerator;
         _logger = logger;
     }
 
     public async Task PublishBookingCreatedAsync(Booking booking)
     {
-        var correlationId = _correlationIdGenerator.Get();
         try
         {
-            await _messageOutbox.AddAsync(new Message<Booking>(correlationId,
-            booking));
+            await _messageOutbox.AddAsync(new Message<Booking>(booking.BookingId,
+                booking));
         }
         catch (Exception ex)
         {
-            LogError(correlationId, ex);
+            LogError(booking.BookingId, ex);
             throw;
         }
     }

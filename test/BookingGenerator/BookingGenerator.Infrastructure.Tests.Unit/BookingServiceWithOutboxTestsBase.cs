@@ -56,34 +56,55 @@ public class BookingServiceWithOutboxTestsBase
         foreach (var message in messages)
         {
             mockMessageOutbox.Verify(m => m.CompleteAsync(new List<Message<Booking>> { message }), Times.Once);
-        };
+        }
     }
 
-    protected static Booking BuildNewBooking(string firstName, string lastName, string startDate,
-        string endDate, string destination, decimal price)
-            => new(firstName, lastName, DateTime.Parse(startDate), DateTime.Parse(endDate), destination, price);
+    protected static Booking BuildNewBooking(string? firstName = null)
+    {
+        var randomString = Guid.NewGuid().ToString();
+        var randomNumber = new Random().Next(1, 1000);
+        var randomDate = DateTime.UtcNow.AddDays(randomNumber);
+        var randomBool = randomNumber % 2 == 0;
+        var randomCarSize = GetRandomEnum<Domain.Enums.Size>();
+        var randomCarTransmission = GetRandomEnum<Domain.Enums.Transmission>();
+
+        var bookingSummary = new BookingSummary(firstName ?? randomString, randomString, randomDate, randomDate, randomString, randomNumber);
+        var car = new CarBooking(randomString, randomCarSize, randomCarTransmission);
+        var hotel = new HotelBooking(randomNumber, randomBool, randomBool, randomBool);
+        var flight = new FlightBooking(randomDate, randomString, randomDate, randomString);
+
+        return new Booking(randomString, bookingSummary, car, hotel, flight);
+    }
+
+    private static T GetRandomEnum<T>() where T : struct, Enum
+    {
+        var values = Enum.GetValues<T>();
+        var length = values.Length;
+
+        return values[new Random().Next(0, length)];
+    }
 
     protected static IEnumerable<Message<Booking>> BuildOutboxMessages()
         => new List<Message<Booking>>
             {
                 new Message<Booking>(Guid.NewGuid().ToString(),
-                    BuildNewBooking("Joe", "Bloggs", "10/07/2022", "25/07/2022", "Malta", 500.43m)),
+                    BuildNewBooking()),
 
                 new Message<Booking>(Guid.NewGuid().ToString(),
-                    BuildNewBooking("John", "Smith", "11/07/2022", "24/07/2022", "Corfu", 305m)),
+                    BuildNewBooking()),
 
                 new Message<Booking>(Guid.NewGuid().ToString(),
-                    BuildNewBooking(_failedBooking, "Bloggs", "10/07/2022", "25/07/2022", "Malta", 500.43m)),
+                    BuildNewBooking()),
 
                 new Message<Booking>(Guid.NewGuid().ToString(),
-                    BuildNewBooking(_failedBooking, "Smith", "11/07/2022", "24/07/2022", "Corfu", 305m))
+                    BuildNewBooking())
             }.AsEnumerable();
 
     protected static IEnumerable<Message<Booking>> GetFailedOutboxMessages(IEnumerable<Message<Booking>> outboxMessages)
-        => outboxMessages.Where(m => m.MessageObject.FirstName == _failedBooking);
+        => outboxMessages.Where(m => m.MessageObject.BookingSummary.FirstName == _failedBooking);
 
     protected static IEnumerable<Message<Booking>> GetSuccessfulOutboxMessages(IEnumerable<Message<Booking>> outboxMessages)
-        => outboxMessages.Where(m => m.MessageObject.FirstName != _failedBooking);
+        => outboxMessages.Where(m => m.MessageObject.BookingSummary.FirstName != _failedBooking);
 
     protected static Mock<ICorrelationIdGenerator> SetUpMockCorrelationIdGenerator(string correlationId)
     {
@@ -112,12 +133,12 @@ public class BookingServiceWithOutboxTestsBase
                 .BookAsync(booking);
 
     protected void SetUpMockBookingService()
-        => _mockBookingService.Setup(m => m.BookAsync(It.Is<Booking>(b => b.FirstName == _failedBooking), It.IsAny<string>()))
+        => _mockBookingService.Setup(m => m.BookAsync(It.Is<Booking>(b => b.BookingSummary.FirstName == _failedBooking), It.IsAny<string>()))
             .ThrowsAsync(new HttpRequestException());
 
     protected void SetUpMockMessageOutbox()
         => _mockMessageOutbox
-            .Setup(m => m.AddAsync(It.Is<Message<Booking>>(b => b.MessageObject.FirstName == _failedOutboxAdd)))
+            .Setup(m => m.AddAsync(It.Is<Message<Booking>>(b => b.MessageObject.BookingSummary.FirstName == _failedOutboxAdd)))
             .ThrowsAsync(new Exception());
 
     protected void AssertMessageNotSetToFailedInOutbox(string correlationId) 

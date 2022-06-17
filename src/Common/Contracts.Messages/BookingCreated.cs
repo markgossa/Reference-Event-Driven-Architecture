@@ -1,2 +1,3 @@
 ﻿namespace Contracts.Messages;
-public record BookingCreated(string FirstName, string LastName, DateTime StartDate, DateTime EndDate, string Destination, decimal Price);
+public record BookingCreated(string BookingId, BookingSummaryEventData BookingSummary, 
+    CarBookingEventData CarBooking, HotelBookingEventData HotelBooking, FlightBookingEventData FlightBooking);

@@ -29,13 +29,4 @@
     <ProjectReference Include="..\..\..\src\Common\Contracts.Messages\Contracts.Messages.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Data\BookingCreated1.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Data\BookingCreated2.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

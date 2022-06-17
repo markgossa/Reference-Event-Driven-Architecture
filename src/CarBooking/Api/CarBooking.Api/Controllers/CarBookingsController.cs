@@ -32,7 +32,9 @@ public class CarBookingsController : Controller
         return new OkObjectResult(GenerateBookingResponse(carBookingRequest));
     }
 
-    private void SetCorrelationIdHeader(CarBookingRequest carBookingRequest) => HttpContext.Response.Headers.Add("X-Correlation-Id", carBookingRequest.Id);
+    private void SetCorrelationIdHeader(CarBookingRequest carBookingRequest) 
+        => HttpContext.Response.Headers.Add("X-Correlation-Id", carBookingRequest.Id);
+
     private async Task MakeBookingsAsync(CarBookingRequest carBookingRequest)
         => await _mediator.Send(MapToMakeBookingCommand(carBookingRequest));
 

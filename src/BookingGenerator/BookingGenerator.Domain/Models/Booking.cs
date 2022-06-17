@@ -1,3 +1,5 @@
 ﻿namespace BookingGenerator.Domain.Models;
 
-public record Booking(string FirstName, string LastName, DateTime StartDate, DateTime EndDate, string Destination, decimal Price);
+public record Booking(string BookingId, BookingSummary BookingSummary, CarBooking CarBooking,
+    HotelBooking HotelBooking, FlightBooking FlightBooking);
+    

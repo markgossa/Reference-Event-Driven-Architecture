@@ -1,7 +1,8 @@
 ﻿using BookingGenerator.Domain.Models;
+using System.Net.Http;
 
 namespace BookingGenerator.Infrastructure.HttpClients;
 public interface IWebBffHttpClient
 {
-    Task PostAsync(Booking booking, string correlationId);
+    Task<HttpResponseMessage> PostAsync(Booking booking, string correlationId);
 }

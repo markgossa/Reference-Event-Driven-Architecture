@@ -14,45 +14,36 @@ public class WebBffHttpClientTests
 {
     private readonly string _webBffUrl = "https://webbffurl";
 
-    [Theory]
-    [InlineData("Joe", "Bloggs", "10/06/2022", "25/06/2022", "Malta", 500.43)]
-    [InlineData("John", "Smith", "11/06/2022", "24/06/2022", "Corfu", 305)]
-    public async void GivenAnInstanceOfBookingService_WhenICallBookAsync_PostsRequestToWebBff(
-        string firstName, string lastName, string startDate, string endDate, string destination, decimal price)
+    [Fact]
+    public async void GivenAnInstanceOfBookingService_WhenICallBookAsync_PostsRequestToWebBff()
     {
         var statusCode = HttpStatusCode.Accepted;
         var correlationId = Guid.NewGuid().ToString();
-        var booking = BuildNewBooking(firstName, lastName, startDate, endDate, destination, price);
+        var booking = BuildNewBooking();
         var httpClient = new HttpClient(BuildMockMessageHandler(statusCode, correlationId, booking));
         var webBffHttpClient = new WebBffHttpClient(httpClient, BuildMockOptions());
 
         await webBffHttpClient.PostAsync(booking, correlationId);
     }
 
-    [Theory]
-    [InlineData("Joe", "Bloggs", "10/06/2022", "25/06/2022", "Malta", 500.43)]
-    [InlineData("John", "Smith", "11/06/2022", "24/06/2022", "Corfu", 305)]
-    public async void GivenAnInstanceOfBookingService_WhenICallBookAsyncWithCorrelationId_PostsRequestToWebBffWithSameCorrelationId(
-        string firstName, string lastName, string startDate, string endDate, string destination, decimal price)
+    [Fact]
+    public async void GivenAnInstanceOfBookingService_WhenICallBookAsyncWithCorrelationId_PostsRequestToWebBffWithSameCorrelationId()
     {
         var statusCode = HttpStatusCode.Accepted;
         var correlationId = Guid.NewGuid().ToString();
-        var booking = BuildNewBooking(firstName, lastName, startDate, endDate, destination, price);
+        var booking = BuildNewBooking();
         var httpClient = new HttpClient(BuildMockMessageHandler(statusCode, correlationId, booking));
         var webBffHttpClient = new WebBffHttpClient(httpClient, BuildMockOptions());
 
         await webBffHttpClient.PostAsync(booking, correlationId);
     }
 
-    [Theory]
-    [InlineData("Joe", "Bloggs", "10/06/2022", "25/06/2022", "Malta", 500.43)]
-    [InlineData("John", "Smith", "11/06/2022", "24/06/2022", "Corfu", 305)]
-    public async void GivenAnInstanceOfBookingService_WhenICallBookAsyncAndThereIsAnError_ThrowsException(
-        string firstName, string lastName, string startDate, string endDate, string destination, decimal price)
+    [Fact]
+    public async void GivenAnInstanceOfBookingService_WhenICallBookAsyncAndThereIsAnError_ThrowsException()
     {
         var statusCode = HttpStatusCode.InternalServerError;
         var correlationId = Guid.NewGuid().ToString();
-        var booking = BuildNewBooking(firstName, lastName, startDate, endDate, destination, price);
+        var booking = BuildNewBooking();
         var httpClient = new HttpClient(BuildMockMessageHandler(statusCode, correlationId, booking));
         var webBffHttpClient = new WebBffHttpClient(httpClient, BuildMockOptions());
 
@@ -93,12 +84,13 @@ public class WebBffHttpClientTests
     {
         var webBffBookingRequest = DeserializeRequest(request);
 
-        return webBffBookingRequest?.FirstName == booking.FirstName
-            && webBffBookingRequest?.LastName == booking.LastName
-            && webBffBookingRequest.StartDate == booking.StartDate
-            && webBffBookingRequest.EndDate == booking.EndDate
-            && webBffBookingRequest.Destination == booking.Destination
-            && webBffBookingRequest.Price == booking.Price;
+        return webBffBookingRequest?.BookingId == booking.BookingId
+            && webBffBookingRequest?.BookingSummary?.FirstName == booking.BookingSummary.FirstName
+            && webBffBookingRequest?.BookingSummary?.LastName == booking.BookingSummary.LastName
+            && webBffBookingRequest?.BookingSummary?.StartDate == booking.BookingSummary.StartDate
+            && webBffBookingRequest?.BookingSummary?.EndDate == booking.BookingSummary.EndDate
+            && webBffBookingRequest?.BookingSummary?.Destination == booking.BookingSummary.Destination
+            && webBffBookingRequest?.BookingSummary?.Price == booking.BookingSummary.Price;
     }
 
     private static WebBffBookingRequest? DeserializeRequest(HttpRequestMessage request)
@@ -108,7 +100,28 @@ public class WebBffHttpClientTests
         return JsonSerializer.Deserialize<WebBffBookingRequest>(json ?? string.Empty);
     }
 
-    private static Booking BuildNewBooking(string firstName, string lastName, string startDate, string endDate,
-        string destination, decimal price)
-            => new(firstName, lastName, DateTime.Parse(startDate), DateTime.Parse(endDate), destination, price);
+    private static Booking BuildNewBooking()
+    {
+        var randomString = Guid.NewGuid().ToString();
+        var randomNumber = new Random().Next(1, 1000);
+        var randomDate = DateTime.UtcNow.AddDays(randomNumber);
+        var randomBool = randomNumber % 2 == 0;
+        var randomCarSize = GetRandomEnum<Domain.Enums.Size>();
+        var randomCarTransmission = GetRandomEnum<Domain.Enums.Transmission>();
+
+        var bookingSummary = new BookingSummary(randomString, randomString, randomDate, randomDate, randomString, randomNumber);
+        var car = new CarBooking(randomString, randomCarSize, randomCarTransmission);
+        var hotel = new HotelBooking(randomNumber, randomBool, randomBool, randomBool);
+        var flight = new FlightBooking(randomDate, randomString, randomDate, randomString);
+
+        return new Booking(randomString, bookingSummary, car, hotel, flight);
+    }
+
+    private static T GetRandomEnum<T>() where T : struct, Enum
+    {
+        var values = Enum.GetValues<T>();
+        var length = values.Length;
+
+        return values[new Random().Next(0, length)];
+    }
 }

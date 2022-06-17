@@ -1,3 +1,6 @@
-﻿namespace BookingGenerator.Api.Models;
+﻿#nullable disable
 
-public record BookingRequest(string FirstName, string LastName, DateTime StartDate, DateTime EndDate, string Destination, decimal Price);
+namespace BookingGenerator.Api.Models;
+
+public record BookingRequest(BookingSummaryRequest BookingSummary, CarBookingRequest Car,
+    HotelBookingRequest Hotel, FlightBookingRequest Flight);

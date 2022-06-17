@@ -5,13 +5,10 @@ using Xunit;
 namespace BookingGenerator.Infrastructure.Tests.Unit;
 public class BookingServiceWithOutboxTests : BookingServiceWithOutboxTestsBase
 {
-    [Theory]
-    [InlineData("Joe", "Bloggs", "10/06/2022", "25/06/2022", "Malta", 500.43)]
-    [InlineData("John", "Smith", "11/06/2022", "24/06/2022", "Corfu", 305)]
-    public async Task GivenNewInstance_WhenICallBook_ThenTheMessageIsAddedToTheOutbox(
-        string firstName, string lastName, string startDate, string endDate, string destination, decimal price)
+    [Fact]
+    public async Task GivenNewInstance_WhenICallBook_ThenTheMessageIsAddedToTheOutbox()
     {
-        var booking = BuildNewBooking(firstName, lastName, startDate, endDate, destination, price);
+        var booking = BuildNewBooking();
         var correlationId = Guid.NewGuid().ToString();
         await MakeNewBookingAsync(booking, SetUpMockCorrelationIdGenerator(correlationId));
 
@@ -22,13 +19,10 @@ public class BookingServiceWithOutboxTests : BookingServiceWithOutboxTestsBase
             new List<Message<Booking>> { new Message<Booking>(correlationId, booking) });
     }
 
-    [Theory]
-    [InlineData(_failedOutboxAdd, "Bloggs", "10/06/2022", "25/06/2022", "Malta", 500.43)]
-    [InlineData(_failedOutboxAdd, "Smith", "11/06/2022", "24/06/2022", "Corfu", 305)]
-    public async Task GivenNewInstance_WhenICallBookAndTheOutboxAddFails_ThenThrows(
-        string firstName, string lastName, string startDate, string endDate, string destination, decimal price)
+    [Fact]
+    public async Task GivenNewInstance_WhenICallBookAndTheOutboxAddFails_ThenThrows()
     {
-        var booking = BuildNewBooking(firstName, lastName, startDate, endDate, destination, price);
+        var booking = BuildNewBooking(_failedOutboxAdd);
         var correlationId = Guid.NewGuid().ToString();
         await Assert.ThrowsAsync<Exception>(async ()
             => await MakeNewBookingAsync(booking, SetUpMockCorrelationIdGenerator(correlationId)));

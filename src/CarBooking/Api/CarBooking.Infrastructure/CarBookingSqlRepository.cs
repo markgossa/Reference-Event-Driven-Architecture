@@ -3,7 +3,7 @@ using CarBooking.Infrastructure.Enums;
 using CarBooking.Infrastructure.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace CarBooking.Infrastructure;
 
@@ -33,7 +33,7 @@ public class CarBookingSqlRepository : ICarBookingRepository
                 || ((SqlException)ex.InnerException).Number == 2601
                 || ((SqlException)ex.InnerException).Number == 2627))
         {
-            throw new DuplicateBookingException("Duplicate message received", ex);
+            throw new DuplicateBookingException("Duplicate car booking received", ex);
         }
         catch (Exception ex)
         {

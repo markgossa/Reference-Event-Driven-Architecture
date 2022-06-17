@@ -1,5 +1,4 @@
 ﻿using BookingGenerator.Application.Repositories;
-using BookingGenerator.Domain.Models;
 using MediatR;
 
 namespace BookingGenerator.Application.Services.Bookings.Commands.MakeBooking;
@@ -13,12 +12,8 @@ internal class MakeBookingCommandHandler : IRequestHandler<MakeBookingCommand>
 
     public async Task<Unit> Handle(MakeBookingCommand makeBookingCommand, CancellationToken cancellationToken)
     {
-        await _bookingService.BookAsync(MapToBooking(makeBookingCommand));
+        await _bookingService.BookAsync(makeBookingCommand.Booking);
 
         return Unit.Value;
     }
-
-    private static Booking MapToBooking(MakeBookingCommand makeBookingCommand)
-        => new(makeBookingCommand.FirstName, makeBookingCommand.LastName, makeBookingCommand.StartDate,
-            makeBookingCommand.EndDate, makeBookingCommand.Destination, makeBookingCommand.Price);
 }

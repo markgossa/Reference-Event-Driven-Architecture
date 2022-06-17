@@ -1,3 +1,6 @@
-﻿namespace WebBff.Api.Models;
+﻿#nullable disable
 
-public record BookingRequest(string FirstName, string LastName, DateTime StartDate, DateTime EndDate, string Destination, decimal Price);
+namespace WebBff.Api.Models;
+
+public record BookingRequest(string BookingId, BookingSummaryRequest BookingSummary, CarBookingRequest Car,
+    HotelBookingRequest Hotel, FlightBookingRequest Flight);
