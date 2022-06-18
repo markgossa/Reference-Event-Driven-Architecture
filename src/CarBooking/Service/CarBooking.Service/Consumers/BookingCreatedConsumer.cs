@@ -4,7 +4,7 @@ using MassTransit;
 
 namespace CarBooking.Service.Consumers;
 
-public class BookingCreatedConsumer
+public class BookingCreatedConsumer : IConsumer<BookingCreated>
 {
     private readonly ICarBookingService _carBookingService;
 

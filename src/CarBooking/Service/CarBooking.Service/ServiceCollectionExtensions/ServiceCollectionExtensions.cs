@@ -1,6 +1,10 @@
 ﻿using CarBooking.Application.Common.Behaviours;
+using CarBooking.Application.Repositories;
 using CarBooking.Application.Services.Bookings.Commands.MakeBooking;
+using CarBooking.Infrastructure.Services;
+using CarBooking.Service.Consumers;
 using FluentValidation;
+using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,5 +22,24 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration) => services;
+    public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration) 
+        => services.AddSingleton<ICarBookingService, CarBookingService>();
+
+    public static IServiceCollection AddMassTransitBus(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddMassTransit(o =>
+        {
+            o.SetKebabCaseEndpointNameFormatter();
+
+            o.AddConsumers(typeof(BookingCreatedConsumer));
+
+            o.UsingAzureServiceBus((context, cfg) =>
+            {
+                cfg.Host(configuration["MessageBus:ServiceBusConnectionString"]);
+                cfg.ConfigureEndpoints(context);
+            });
+        });
+
+        return services;
+    }
 }

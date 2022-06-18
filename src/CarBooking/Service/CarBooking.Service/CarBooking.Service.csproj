@@ -16,7 +16,8 @@
 
   <ItemGroup>
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="10.4.0" />
-    <PackageReference Include="MassTransit" Version="8.0.2" />
+    <PackageReference Include="MassTransit" Version="8.0.3" />
+    <PackageReference Include="masstransit.azure.servicebus.core" Version="8.0.3" />
     <PackageReference Include="MediatR" Version="10.0.1" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />

@@ -16,6 +16,7 @@ public class Startup
             .AddMediatorServices()
             .AddApplicationInsightsTelemetry()
             .AddServices(Configuration)
+            .AddMassTransitBus(Configuration)
             .AddControllers();
 
     public void Configure(IApplicationBuilder app)
