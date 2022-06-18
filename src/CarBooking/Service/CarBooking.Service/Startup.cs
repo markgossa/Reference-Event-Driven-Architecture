@@ -1,5 +1,4 @@
 ﻿using CarBooking.Service.ServiceCollectionExtensions;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -19,7 +18,7 @@ public class Startup
             .AddMassTransitBus(Configuration)
             .AddControllers();
 
-    public void Configure(IApplicationBuilder app)
+    public void Configure()
     {
     }
 }

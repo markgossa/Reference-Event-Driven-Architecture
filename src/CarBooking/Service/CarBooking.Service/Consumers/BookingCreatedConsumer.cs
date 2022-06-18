@@ -1,18 +1,19 @@
-﻿using CarBooking.Application.Repositories;
+﻿using CarBooking.Application.Services.CarBookings.Commands.MakeCarBooking;
 using Contracts.Messages;
 using MassTransit;
+using MediatR;
 
 namespace CarBooking.Service.Consumers;
 
 public class BookingCreatedConsumer : IConsumer<BookingCreated>
 {
-    private readonly ICarBookingService _carBookingService;
+    private readonly IMediator _mediator;
 
-    public BookingCreatedConsumer(ICarBookingService carBookingService)
-        => _carBookingService = carBookingService;
+    public BookingCreatedConsumer(IMediator mediator)
+        => _mediator = mediator;
 
     public async Task Consume(ConsumeContext<BookingCreated> context) 
-        => await _carBookingService.SendAsync(MapToCarBooking(context));
+        => await _mediator.Send(new MakeCarBookingCommand(MapToCarBooking(context)));
 
     private static Domain.Models.CarBooking MapToCarBooking(ConsumeContext<BookingCreated> context)
     {

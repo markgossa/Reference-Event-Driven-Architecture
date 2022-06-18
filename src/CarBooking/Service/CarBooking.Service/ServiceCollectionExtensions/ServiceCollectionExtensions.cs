@@ -1,6 +1,6 @@
 ﻿using CarBooking.Application.Common.Behaviours;
 using CarBooking.Application.Repositories;
-using CarBooking.Application.Services.Bookings.Commands.MakeBooking;
+using CarBooking.Application.Services.CarBookings.Commands.MakeCarBooking;
 using CarBooking.Infrastructure.Services;
 using CarBooking.Service.Consumers;
 using FluentValidation;
