@@ -3,6 +3,8 @@ using CarBooking.Service.Consumers;
 using Contracts.Messages;
 using Contracts.Messages.Enums;
 using MassTransit;
+using MassTransit.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -13,33 +15,21 @@ public class CarBookingServiceTests
     public async void GivenNewBookingCreatedEvent_WhenThisIsReceived_ThenMakesACarBookingAndSendsACarBookedEvent()
     {
         var mockCarBookingService = new Mock<ICarBookingService>();
-        var mockConsumeContext = BuildMockConsumeContext();
+        var serviceProvider = BuildServiceProvider(mockCarBookingService);
+        var bookingCreated = BuildBookingCreated();
         Domain.Models.CarBooking? actualCarBooking = null;
         mockCarBookingService.Setup(m => m.SendAsync(It.Is<Domain.Models.CarBooking>(c
-                => c.BookingId == mockConsumeContext.Object.Message.BookingId.ToString())))
+                => c.BookingId == bookingCreated.BookingId.ToString())))
             .Callback<Domain.Models.CarBooking>(c => actualCarBooking = c);
 
-        var sut = new BookingCreatedConsumer(mockCarBookingService.Object);
-        await sut.Consume(mockConsumeContext.Object);
+        var testHarness = await StartTestHarness(serviceProvider);
+        SendMessage(bookingCreated, serviceProvider);
 
-        var expectedBookingSummary = mockConsumeContext.Object.Message.BookingSummary;
-        var expectedCarBooking = mockConsumeContext.Object.Message.CarBooking;
-        Assert.Equal(mockConsumeContext.Object.Message.BookingId, actualCarBooking?.BookingId);
-        Assert.Equal(expectedCarBooking.PickUpLocation, actualCarBooking?.PickUpLocation);
-        Assert.Equal(expectedBookingSummary.FirstName, actualCarBooking?.FirstName);
-        Assert.Equal(expectedBookingSummary.LastName, actualCarBooking?.LastName);
-        Assert.Equal(expectedCarBooking.Size.ToString(), actualCarBooking?.Size.ToString());
-        Assert.Equal(expectedCarBooking.Transmission.ToString(), actualCarBooking?.Transmission.ToString());
+        await AssertMessageConsumedAsync(serviceProvider, bookingCreated, testHarness);
+        AssertCarBookingSentAsync(bookingCreated, actualCarBooking);
     }
 
-    private static Mock<ConsumeContext<BookingCreated>> BuildMockConsumeContext()
-    {
-        var mockConsumeContext = new Mock<ConsumeContext<BookingCreated>>();
-        var bookingCreated = BuildBookingCreated();
-        mockConsumeContext.Setup(m => m.Message).Returns(bookingCreated);
-
-        return mockConsumeContext;
-    }
+    //public async void GivenNewBookingCreatedEvent_WhenThisIsReceived_ThenSendsACarBookedEvent(){}
 
     private static BookingCreated BuildBookingCreated()
     {
@@ -65,5 +55,55 @@ public class CarBookingServiceTests
         var length = values.Length;
 
         return values[new Random().Next(0, length)];
+    }
+
+    private static ServiceProvider BuildServiceProvider(Mock<ICarBookingService> mockCarBookingService)
+        => new ServiceCollection()
+            .AddMassTransitTestHarness(cfg => cfg.AddConsumer<BookingCreatedConsumer>())
+            .AddSingleton(mockCarBookingService.Object)
+            .BuildServiceProvider(true);
+
+    private static void SendMessage(BookingCreated bookingCreated, ServiceProvider provider)
+    {
+        var requestClient = provider.GetRequiredService<IBus>().CreateRequestClient<BookingCreated>();
+        requestClient.GetResponse<BookingCreated>(bookingCreated);
+    }
+
+    private static async Task<ITestHarness> StartTestHarness(ServiceProvider provider)
+    {
+        var testHarness = provider.GetRequiredService<ITestHarness>();
+        await testHarness.Start();
+
+        return testHarness;
+    }
+
+    private static async Task<bool> IsMessageConsumedByConsumer(ServiceProvider serviceProvider, BookingCreated bookingCreated)
+        => await serviceProvider.GetRequiredService<IConsumerTestHarness<BookingCreatedConsumer>>()
+                .Consumed.Any<BookingCreated>(x => IsMessageReceived(x, bookingCreated));
+
+    private static async Task<bool> IsMessageConsumedByService(ITestHarness testHarness, BookingCreated bookingCreated)
+        => await testHarness.Consumed.Any<BookingCreated>(x => IsMessageReceived(x, bookingCreated));
+    
+    private static bool IsMessageReceived(IReceivedMessage<BookingCreated> receivedMessages, BookingCreated expectedMessage)
+    {
+        var bookingCreated = receivedMessages.MessageObject as BookingCreated;
+
+        return bookingCreated?.BookingId == expectedMessage.BookingId;
+    }
+
+    private static async Task AssertMessageConsumedAsync(ServiceProvider serviceProvider, BookingCreated bookingCreated, ITestHarness testHarness)
+    {
+        Assert.True(await IsMessageConsumedByService(testHarness, bookingCreated));
+        Assert.True(await IsMessageConsumedByConsumer(serviceProvider, bookingCreated));
+    }
+
+    private static void AssertCarBookingSentAsync(BookingCreated bookingCreated, Domain.Models.CarBooking? carBooking)
+    {
+        Assert.Equal(bookingCreated.BookingId, carBooking?.BookingId);
+        Assert.Equal(bookingCreated.CarBooking.PickUpLocation, carBooking?.PickUpLocation);
+        Assert.Equal(bookingCreated.BookingSummary.FirstName, carBooking?.FirstName);
+        Assert.Equal(bookingCreated.BookingSummary.LastName, carBooking?.LastName);
+        Assert.Equal(bookingCreated.CarBooking.Size.ToString(), carBooking?.Size.ToString());
+        Assert.Equal(bookingCreated.CarBooking.Transmission.ToString(), carBooking?.Transmission.ToString());
     }
 }
