@@ -1,6 +1,6 @@
 ﻿namespace CarBooking.Application.Repositories;
 
-public interface ICarBookingService
+public interface ICarBookingRepository
 {
     Task SendAsync(Domain.Models.CarBooking carBooking);
 }

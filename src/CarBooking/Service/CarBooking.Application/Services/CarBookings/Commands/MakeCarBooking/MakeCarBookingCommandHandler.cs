@@ -5,14 +5,14 @@ namespace CarBooking.Application.Services.CarBookings.Commands.MakeCarBooking;
 
 internal class MakeCarBookingCommandHandler : IRequestHandler<MakeCarBookingCommand>
 {
-    private readonly ICarBookingService _carBookingService;
+    private readonly ICarBookingRepository _carBookingRepository;
 
-    public MakeCarBookingCommandHandler(ICarBookingService carBookingService)
-        => _carBookingService = carBookingService;
+    public MakeCarBookingCommandHandler(ICarBookingRepository carBookingRepository)
+        => _carBookingRepository = carBookingRepository;
 
     public async Task<Unit> Handle(MakeCarBookingCommand makeCarBookingCommand, CancellationToken cancellationToken)
     {
-        await _carBookingService.SendAsync(MapToBooking(makeCarBookingCommand));
+        await _carBookingRepository.SendAsync(MapToBooking(makeCarBookingCommand));
 
         return Unit.Value;
     }

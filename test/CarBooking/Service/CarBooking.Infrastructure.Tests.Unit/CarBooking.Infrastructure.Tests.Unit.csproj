@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -8,12 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="CarBooking.Service.Tests.Component.v3.ncrunchproject" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="MassTransit" Version="8.0.3" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="Moq" Version="4.17.2" />
     <PackageReference Include="xunit" Version="2.4.1" />
@@ -28,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\src\CarBooking\Service\CarBooking.Service\CarBooking.Service.csproj" />
-    <ProjectReference Include="..\..\..\..\src\Common\Contracts.Messages\Contracts.Messages.csproj" />
+    <ProjectReference Include="..\..\..\..\src\CarBooking\Service\CarBooking.Domain\CarBooking.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\src\CarBooking\Service\CarBooking.Infrastructure\CarBooking.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

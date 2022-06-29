@@ -50,7 +50,7 @@ public static class ServiceCollectionExtensions
             o.SetKebabCaseEndpointNameFormatter();
             o.UsingAzureServiceBus((context, cfg) =>
             {
-                cfg.Host(configuration["MessageBus:ServiceBusConnectionString"]);
+                cfg.Host(new Uri(configuration["MessageBus:ServiceBusUri"]));
                 cfg.ConfigureEndpoints(context);
             });
         });

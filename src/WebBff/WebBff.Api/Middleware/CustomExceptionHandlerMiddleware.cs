@@ -3,6 +3,7 @@ using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using System.Net;
 using System.Text.Json;
+using Common.Messaging.Folder.Models;
 
 namespace WebBff.Api.Middleware;
 
@@ -37,6 +38,9 @@ public class CustomExceptionHandlerMiddleware
                 break;
             case NotFoundException _:
                 httpStatusCode = HttpStatusCode.NotFound;
+                break;
+            case DuplicateMessageException _:
+                httpStatusCode = HttpStatusCode.Conflict;
                 break;
         }
 

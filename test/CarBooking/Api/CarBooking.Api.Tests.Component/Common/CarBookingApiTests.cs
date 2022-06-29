@@ -111,7 +111,7 @@ public class CarBookingApiTests : IClassFixture<ApiTestsContext>
         => _context.MockCarBookingRepository.Verify(m => m.SaveAsync(MapToBooking(carBookingRequest)), Times.Once);
 
     private static Domain.Models.CarBooking MapToBooking(CarBookingRequest carBookingRequest)
-        => new(carBookingRequest.Id, carBookingRequest.FirstName, carBookingRequest.LastName, carBookingRequest.StartDate,
+        => new(carBookingRequest.BookingId, carBookingRequest.FirstName, carBookingRequest.LastName, carBookingRequest.StartDate,
                 carBookingRequest.EndDate, carBookingRequest.PickUpLocation, carBookingRequest.Price,
                 carBookingRequest.Size, carBookingRequest.Transmission);
 
@@ -125,7 +125,7 @@ public class CarBookingApiTests : IClassFixture<ApiTestsContext>
     private static void AssertBookingResponseEqualToCarBookingRequest(CarBookingRequest carBookingRequest,
         CarBookingResponse? carBookingResponse)
     {
-        Assert.Equal(carBookingResponse?.Id, carBookingRequest?.Id);
+        Assert.Equal(carBookingResponse?.BookingId, carBookingRequest?.BookingId);
         Assert.Equal(carBookingResponse?.FirstName, carBookingRequest?.FirstName);
         Assert.Equal(carBookingResponse?.LastName, carBookingRequest?.LastName);
         Assert.Equal(carBookingResponse?.StartDate, carBookingRequest?.StartDate);

@@ -1,4 +1,5 @@
 ﻿using AspNet.CorrelationIdGenerator;
+using Common.Messaging.Folder.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,8 +16,8 @@ public class ApiTestsContext : IDisposable
     public HttpClient HttpClient { get; }
     public Mock<IMessageBusOutbox> MockMessageBusOutbox { get; } = new();
     public readonly string CorrelationId = Guid.NewGuid().ToString();
-
-    protected const string _errorFirstName = "Unlucky";
+    public const string ErrorFirstName = "Unlucky";
+    public const string DuplicateFirstName = "Duplicate"; 
     private readonly Mock<ICorrelationIdGenerator> _mockCorrelationIdGenerator = new();
 
     public ApiTestsContext()
@@ -27,8 +28,13 @@ public class ApiTestsContext : IDisposable
     }
 
     private void SetUpMockMessageBus()
-        => MockMessageBusOutbox.Setup(m => m.PublishBookingCreatedAsync(It.Is<Booking>(
-            b => b.BookingSummary.FirstName == _errorFirstName))).Throws<Exception>();
+    {
+        MockMessageBusOutbox.Setup(m => m.PublishBookingCreatedAsync(It.Is<Booking>(
+                b => b.BookingSummary.FirstName == ErrorFirstName))).Throws<Exception>();
+        
+        MockMessageBusOutbox.Setup(m => m.PublishBookingCreatedAsync(It.Is<Booking>(
+                b => b.BookingSummary.FirstName == DuplicateFirstName))).Throws<DuplicateMessageException>();
+    }
 
     protected WebApplicationFactory<Startup> BuildWebApplicationFactory()
         => new WebApplicationFactory<Startup>()

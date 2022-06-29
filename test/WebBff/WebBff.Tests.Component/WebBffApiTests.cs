@@ -14,7 +14,6 @@ public class WebBffApiTests : IClassFixture<ApiTestsContext>
 {
     private const string _apiRoute = "bookings";
     private const string _apiRouteV1 = "v1/bookings";
-    protected const string _errorFirstName = "Unlucky";
     private readonly ApiTestsContext _context;
 
     public WebBffApiTests(ApiTestsContext context) => _context = context;
@@ -57,11 +56,24 @@ public class WebBffApiTests : IClassFixture<ApiTestsContext>
     public async Task GivenValidBookingRequest_WhenPostEndpointCalledAndThereIsAnError_ThenReturnsInternalServerError(
         string apiRoute)
     {
-        var bookingRequest = BuildBookingRequest(_errorFirstName);
+        var bookingRequest = BuildBookingRequest(ApiTestsContext.ErrorFirstName);
 
         var httpResponse = await MakeBookingAsync(bookingRequest, apiRoute);
 
         Assert.Equal(HttpStatusCode.InternalServerError, httpResponse.StatusCode);
+    }
+    
+    [Theory]
+    [InlineData(_apiRoute)]
+    [InlineData(_apiRouteV1)]
+    public async Task GivenValidBookingRequest_WhenPostEndpointCalledAndTheBookingIdIsADuplicate_ThenReturnsConflict(
+        string apiRoute)
+    {
+        var bookingRequest = BuildBookingRequest(ApiTestsContext.DuplicateFirstName);
+
+        var httpResponse = await MakeBookingAsync(bookingRequest, apiRoute);
+
+        Assert.Equal(HttpStatusCode.Conflict, httpResponse.StatusCode);
     }
 
     private async Task<HttpResponseMessage> MakeBookingAsync(BookingRequest bookingRequest, string apiRoute)

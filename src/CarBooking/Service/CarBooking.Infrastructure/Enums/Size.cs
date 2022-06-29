@@ -1,6 +1,6 @@
 ﻿namespace CarBooking.Infrastructure.Enums;
 
-public enum CarSize
+public enum Size
 {
     Small,
     Medium,

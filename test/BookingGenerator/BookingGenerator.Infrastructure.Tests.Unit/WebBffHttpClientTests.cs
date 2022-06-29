@@ -23,7 +23,9 @@ public class WebBffHttpClientTests
         var httpClient = new HttpClient(BuildMockMessageHandler(statusCode, correlationId, booking));
         var webBffHttpClient = new WebBffHttpClient(httpClient, BuildMockOptions());
 
-        await webBffHttpClient.PostAsync(booking, correlationId);
+        var response = await webBffHttpClient.PostAsync(booking, correlationId);
+
+        Assert.Equal(statusCode, response.StatusCode);
     }
 
     [Fact]
@@ -35,7 +37,9 @@ public class WebBffHttpClientTests
         var httpClient = new HttpClient(BuildMockMessageHandler(statusCode, correlationId, booking));
         var webBffHttpClient = new WebBffHttpClient(httpClient, BuildMockOptions());
 
-        await webBffHttpClient.PostAsync(booking, correlationId);
+        var response = await webBffHttpClient.PostAsync(booking, correlationId);
+
+        Assert.Equal(statusCode, response.StatusCode);
     }
 
     [Fact]

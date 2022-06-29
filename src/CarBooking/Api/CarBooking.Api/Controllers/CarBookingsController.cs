@@ -33,18 +33,18 @@ public class CarBookingsController : Controller
     }
 
     private void SetCorrelationIdHeader(CarBookingRequest carBookingRequest) 
-        => HttpContext.Response.Headers.Add("X-Correlation-Id", carBookingRequest.Id);
+        => HttpContext.Response.Headers.Add("X-Correlation-Id", carBookingRequest.BookingId);
 
     private async Task MakeBookingsAsync(CarBookingRequest carBookingRequest)
         => await _mediator.Send(MapToMakeBookingCommand(carBookingRequest));
 
     private static MakeCarBookingCommand MapToMakeBookingCommand(CarBookingRequest carBookingRequest)
-        => new(carBookingRequest.Id, carBookingRequest.FirstName, carBookingRequest.LastName, carBookingRequest.StartDate,
+        => new(carBookingRequest.BookingId, carBookingRequest.FirstName, carBookingRequest.LastName, carBookingRequest.StartDate,
             carBookingRequest.EndDate, carBookingRequest.PickUpLocation, carBookingRequest.Price,
             carBookingRequest.Size, carBookingRequest.Transmission);
 
     private static CarBookingResponse GenerateBookingResponse(CarBookingRequest carBookingRequest)
-        => new(carBookingRequest.Id, carBookingRequest.FirstName, carBookingRequest.LastName,
+        => new(carBookingRequest.BookingId, carBookingRequest.FirstName, carBookingRequest.LastName,
             carBookingRequest.StartDate, carBookingRequest.EndDate, carBookingRequest.PickUpLocation,
             carBookingRequest.Price, carBookingRequest.Size, carBookingRequest.Transmission);
 }

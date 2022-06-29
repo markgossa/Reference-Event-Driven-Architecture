@@ -2,7 +2,7 @@ using Contracts.Messages.Enums;
 
 namespace Contracts.Messages.Tests.Unit;
 
-public class BookingCreatedTests
+public class CarBookedTests
 {
     [Fact]
     public void GivenNewInstance_WhenCreated_ThenCanSetTheCorrectProperties()
@@ -36,10 +36,10 @@ public class BookingCreatedTests
         var hotel = new HotelBookingEventData(numberOfBeds, breakfastIncluded, lunchIncluded, dinnerIncluded);
         var flight = new FlightBookingEventData(outboundFlightTime, outboundFlightNumber, inboundFlightTime, inboundFlightNumber);
 
-        var sut = new BookingCreated(bookingId, bookingSummary, car, hotel, flight);
-
+        var sut = new CarBooked(bookingId, bookingSummary, car, hotel, flight);
+        
         TestHelpers.AssertPropertiesCorrect(bookingId, firstName, lastName, destination, price, startDate, endDate, 
-            pickUpLocation, size, transmission, numberOfBeds, breakfastIncluded, lunchIncluded, dinnerIncluded, 
+            pickUpLocation, size, transmission, numberOfBeds, breakfastIncluded, lunchIncluded, dinnerIncluded,
             outboundFlightTime, outboundFlightNumber, inboundFlightTime, inboundFlightNumber, sut);
     }
 }

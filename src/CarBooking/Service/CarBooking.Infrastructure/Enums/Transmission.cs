@@ -1,6 +1,6 @@
 ﻿namespace CarBooking.Infrastructure.Enums;
 
-public enum CarTransmission
+public enum Transmission
 {
     Manual,
     Automatic
