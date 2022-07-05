@@ -7,11 +7,11 @@ using Moq;
 
 namespace CarBooking.Service.Tests.Component;
 
-public class ApiTestsContext
+public class ServiceTestsContext
 {
-    public Mock<ICarBookingRepository> MockCarBookingService { get; private set; }
+    public Mock<ICarBookingRepository> MockCarBookingRepository { get; private set; }
 
-    public ApiTestsContext() => MockCarBookingService = new Mock<ICarBookingRepository>();
+    public ServiceTestsContext() => MockCarBookingRepository = new Mock<ICarBookingRepository>();
 
     public WebApplicationFactory<Startup> WebApplicationFactory
         => new WebApplicationFactory<Startup>()
@@ -20,5 +20,5 @@ public class ApiTestsContext
 
     private void RegisterServices(ServiceCollection services)
         => services.AddMassTransitTestHarness(cfg => cfg.AddConsumer<BookingCreatedConsumer>())
-            .AddSingleton(MockCarBookingService.Object);
+            .AddSingleton(MockCarBookingRepository.Object);
 }

@@ -8,37 +8,35 @@ using Moq;
 using Xunit;
 
 namespace CarBooking.Service.Tests.Component;
-public class CarBookingServiceTests : IClassFixture<ApiTestsContext>
+public class CarBookingServiceTests : IClassFixture<ServiceTestsContext>
 {
-    private readonly ApiTestsContext _context;
+    private readonly ServiceTestsContext _context;
 
-    public CarBookingServiceTests(ApiTestsContext context) => _context = context;
+    public CarBookingServiceTests(ServiceTestsContext context) => _context = context;
 
     [Fact]
-    public async void GivenNewBookingCreatedEvent_WhenThisIsReceived_ThenMakesACarBooking()
+    public async void GivenNewInstance_WhenABookingCreatedEventIsReceived_ThenMakesACarBooking()
     {
-        var webApplicationFactory = _context.WebApplicationFactory;
         var bookingCreated = BuildBookingCreated();
-
         Domain.Models.CarBooking? actualCarBooking = null;
-        _context.MockCarBookingService.Setup(m => m.SendAsync(It.Is<Domain.Models.CarBooking>(c
+        _context.MockCarBookingRepository.Setup(m => m.SendAsync(It.Is<Domain.Models.CarBooking>(c
                 => c.BookingId == bookingCreated.BookingId.ToString())))
             .Callback<Domain.Models.CarBooking>(c => actualCarBooking = c);
 
+        var webApplicationFactory = _context.WebApplicationFactory;
         var testHarness = await StartTestHarness(webApplicationFactory.Services);
         SendMessage(bookingCreated, webApplicationFactory.Services);
 
         await AssertMessageConsumedAsync(webApplicationFactory.Services, bookingCreated, testHarness);
-        AssertCarBookingSentToCarBookingServiceAsync(bookingCreated, actualCarBooking);
-        AssertCarBookingServiceCalledOnce(bookingCreated);
+        AssertCarBookingSentToCarBookingRepositoryAsync(bookingCreated, actualCarBooking);
     }
-    
+
     [Fact]
-    public async void GivenNewBookingCreatedEvent_WhenThisIsReceived_ThenSendsACarBookedEvent()
+    public async void GivenNewInstance_WhenABookingCreatedEventIsReceived_ThenSendsACarBookedEvent()
     {
-        var webApplicationFactory = _context.WebApplicationFactory;
         var bookingCreated = BuildBookingCreated();
 
+        var webApplicationFactory = _context.WebApplicationFactory;
         var testHarness = await StartTestHarness(webApplicationFactory.Services);
         SendMessage(bookingCreated, webApplicationFactory.Services);
 
@@ -107,7 +105,7 @@ public class CarBookingServiceTests : IClassFixture<ApiTestsContext>
     private static async Task<bool> IsMessageConsumedByService(ITestHarness testHarness, BookingCreated bookingCreated)
         => await testHarness.Consumed.Any<BookingCreated>(x => IsMessageReceived(x, bookingCreated));
 
-    private static void AssertCarBookingSentToCarBookingServiceAsync(BookingCreated bookingCreated, Domain.Models.CarBooking? carBooking)
+    private void AssertCarBookingSentToCarBookingRepositoryAsync(BookingCreated bookingCreated, Domain.Models.CarBooking? carBooking)
     {
         Assert.Equal(bookingCreated.BookingId, carBooking?.BookingId);
         Assert.Equal(bookingCreated.CarBooking.PickUpLocation, carBooking?.PickUpLocation);
@@ -115,11 +113,10 @@ public class CarBookingServiceTests : IClassFixture<ApiTestsContext>
         Assert.Equal(bookingCreated.BookingSummary.LastName, carBooking?.LastName);
         Assert.Equal(bookingCreated.CarBooking.Size.ToString(), carBooking?.Size.ToString());
         Assert.Equal(bookingCreated.CarBooking.Transmission.ToString(), carBooking?.Transmission.ToString());
-    }
 
-    private void AssertCarBookingServiceCalledOnce(BookingCreated bookingCreated)
-        => _context.MockCarBookingService.Verify(m => m.SendAsync(It.Is<Domain.Models.CarBooking>(c
+        _context.MockCarBookingRepository.Verify(m => m.SendAsync(It.Is<Domain.Models.CarBooking>(c
             => c.BookingId == bookingCreated.BookingId.ToString())), Times.Once);
+    }
 
     private static async Task AssertCarBookedMessageSentAsync(BookingCreated bookingCreated, ITestHarness testHarness)
     {
