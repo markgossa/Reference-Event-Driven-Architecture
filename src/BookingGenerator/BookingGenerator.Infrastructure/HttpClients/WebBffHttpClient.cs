@@ -17,7 +17,7 @@ public class WebBffHttpClient : IWebBffHttpClient
         _httpClient = httpClient;
         _settings = options.Value;
     }
-
+    
     public async Task<HttpResponseMessage> PostAsync(Booking booking, string correlationId)
     {
         var request = BuildRequest(booking, correlationId);
@@ -30,14 +30,9 @@ public class WebBffHttpClient : IWebBffHttpClient
         
         return BuildHttpRequest(webBffBooking, correlationId);
     }
-    
-    private async Task<HttpResponseMessage> SendRequestAsync(HttpRequestMessage request)
-    {
-        var response = await _httpClient.SendAsync(request);
-        response.EnsureSuccessStatusCode();
 
-        return response;
-    }
+    private async Task<HttpResponseMessage> SendRequestAsync(HttpRequestMessage request) 
+        => await _httpClient.SendAsync(request);
 
     private static WebBffBookingRequest MapToWebBffBooking(Booking booking)
         => new(booking.BookingId, MapToBookingSummary(booking), MapToCarBooking(booking), 

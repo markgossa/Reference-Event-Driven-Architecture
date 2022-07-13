@@ -42,19 +42,6 @@ public class WebBffHttpClientTests
         Assert.Equal(statusCode, response.StatusCode);
     }
 
-    [Fact]
-    public async void GivenAnInstanceOfBookingService_WhenICallBookAsyncAndThereIsAnError_ThrowsException()
-    {
-        var statusCode = HttpStatusCode.InternalServerError;
-        var correlationId = Guid.NewGuid().ToString();
-        var booking = BuildNewBooking();
-        var httpClient = new HttpClient(BuildMockMessageHandler(statusCode, correlationId, booking));
-        var webBffHttpClient = new WebBffHttpClient(httpClient, BuildMockOptions());
-
-        await Assert.ThrowsAsync<HttpRequestException>(async ()
-            => await webBffHttpClient.PostAsync(booking, correlationId));
-    }
-
     private IOptions<WebBffHttpClientSettings> BuildMockOptions()
     {
         var mockOptions = new Mock<IOptions<WebBffHttpClientSettings>>();
