@@ -329,8 +329,8 @@ public class SqlMessageRepositoryTests
     }
 
     private static void AssertLockExpiryTime(DateTime? actualLockExpiry, DateTime expectedLockExpiry)
-        => Assert.InRange(actualLockExpiry ?? DateTime.MinValue, expectedLockExpiry.AddMilliseconds(-100),
-            expectedLockExpiry.AddMilliseconds(100));
+        => Assert.InRange(actualLockExpiry ?? DateTime.MinValue, expectedLockExpiry.AddMilliseconds(-200),
+            expectedLockExpiry.AddMilliseconds(200));
 
     private void AssertMessageSetAsLockedInSql(MessageSqlRow outboxMessageRow1)
     {
