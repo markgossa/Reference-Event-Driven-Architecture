@@ -29,7 +29,6 @@ public class CarBookingHttpClient : ICarBookingHttpClient
     private async Task SendRequestAsync(HttpRequestMessage httpRequest)
     {
         using var response = await _httpClient.SendAsync(httpRequest);
-        response.EnsureSuccessStatusCode();
     }
 
     private HttpRequestMessage BuildHttpRequestMessage(CarBookingRequest carBookingRequest)

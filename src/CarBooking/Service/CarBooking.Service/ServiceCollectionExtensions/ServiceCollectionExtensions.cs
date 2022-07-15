@@ -10,6 +10,9 @@ using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Polly;
+using Polly.Extensions.Http;
+using System.Net.Http;
 
 namespace CarBooking.Service.ServiceCollectionExtensions;
 
@@ -26,13 +29,21 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddServices(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddSingleton<ICarBookingRepository, CarBookingRepository>()
-            .AddHttpClient<ICarBookingHttpClient, CarBookingHttpClient>();
+        AddCarBookingHttpClient(services, configuration);
 
         services.AddOptions<CarBookingHttpClientSettings>()
             .Bind(configuration.GetSection(nameof(CarBookingHttpClientSettings)));
 
         return services;
+    }
+
+    private static void AddCarBookingHttpClient(IServiceCollection services, IConfiguration configuration)
+    {
+        var settings = configuration.GetSection(nameof(CarBookingHttpClientSettings)).Get<CarBookingHttpClientSettings>();
+        services.AddOptions<CarBookingHttpClientSettings>().Bind(configuration);
+        services.AddSingleton<ICarBookingRepository, CarBookingRepository>()
+            .AddHttpClient<ICarBookingHttpClient, CarBookingHttpClient>()
+            .AddPolicyHandler(BuildRetryPolicy(settings));
     }
 
     public static IServiceCollection AddBus(this IServiceCollection services, IConfiguration configuration)
@@ -57,10 +68,16 @@ public static class ServiceCollectionExtensions
 
     private static IRetryConfigurator AddRetryConfiguration(IRetryConfigurator retryConfigurator)
     {
-        retryConfigurator.Exponential(int.MaxValue, TimeSpan.FromMilliseconds(200), TimeSpan.FromMinutes(120), 
+        retryConfigurator.Exponential(int.MaxValue, TimeSpan.FromMilliseconds(200), TimeSpan.FromMinutes(120),
                 TimeSpan.FromMilliseconds(200))
             .Ignore<ValidationException>();
 
         return retryConfigurator;
     }
+
+    private static IAsyncPolicy<HttpResponseMessage> BuildRetryPolicy(CarBookingHttpClientSettings settings)
+        => HttpPolicyExtensions
+            .HandleTransientHttpError()
+            .WaitAndRetryAsync(settings.MaxAttempts - 1,
+                i => TimeSpan.FromMilliseconds(settings.InitialRetryIntervalMilliseconds * i));
 }

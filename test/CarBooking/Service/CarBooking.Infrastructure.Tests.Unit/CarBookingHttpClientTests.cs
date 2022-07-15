@@ -30,15 +30,18 @@ public class CarBookingHttpClientTests
         AssertCarBookingRequestSent(carBookingRequest, mockMessageHandler);
     }
 
-    [Fact]
-    public async void GivenANewInstance_WhenICallPostAsyncAndThereIsAnError_ThenThrowsHttpRequestException()
+    [Theory]
+    [InlineData(HttpStatusCode.InternalServerError)]
+    [InlineData(HttpStatusCode.BadRequest)]
+    [InlineData(HttpStatusCode.Conflict)]
+    public async void GivenANewInstance_WhenICallPostAsyncAndThereIsAnErrorOrConflictOrBadRequest_ThenDoesNotThrowHttpRequestException(
+        HttpStatusCode httpStatusCode)
     {
         var carBookingRequest = BuildNewCarBookingRequest();
-        var mockMessageHandler = BuildMockMessageHandler(HttpStatusCode.InternalServerError,
-            carBookingRequest.BookingId, carBookingRequest);
+        var mockMessageHandler = BuildMockMessageHandler(httpStatusCode, carBookingRequest.BookingId, carBookingRequest);
 
         var sut = new CarBookingHttpClient(new HttpClient(mockMessageHandler.Object), _mockOptions.Object);
-        await Assert.ThrowsAsync<HttpRequestException>(() => sut.PostAsync(carBookingRequest));
+        await sut.PostAsync(carBookingRequest);
     }
 
     private CarBookingRequest BuildNewCarBookingRequest()
